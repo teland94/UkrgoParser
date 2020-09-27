@@ -6,13 +6,14 @@
     </div>
     <md-table v-if="phoneNumbers && phoneNumbers.length > 0">
       <md-table-row>
-        <md-table-head>Действие</md-table-head>
+        <md-table-head>Действия</md-table-head>
         <md-table-head>Номер</md-table-head>
         <md-table-head>Ссылка</md-table-head>
       </md-table-row>
       <md-table-row v-for="phoneNumber of phoneNumbers" :key="phoneNumber.number">
-        <md-table-cell>
-          <md-button v-clipboard="phoneNumber.number" class="md-dense md-raised">Копировать</md-button>
+        <md-table-cell class="toolbar">
+          <md-button v-clipboard="phoneNumber.number" class="md-dense md-raised md-primary">Копировать</md-button>
+          <md-button @click="addPhoneNumber(phoneNumber.number)" class="md-dense md-raised md-accent">Добавить в ЧС</md-button>
         </md-table-cell>
         <md-table-cell>{{phoneNumber.number}}</md-table-cell>
         <md-table-cell>
@@ -30,7 +31,7 @@
 import axios from 'axios';
 
 export default {
-  name: 'HelloWorld',
+  name: 'Home',
   data() {
     return {
       phoneNumbers: [],
@@ -64,6 +65,11 @@ export default {
       const parsedPhoneNumbers = JSON.stringify(this.phoneNumbers);
       localStorage.setItem('phoneNumbers', parsedPhoneNumbers);
     },
+    async addPhoneNumber(phoneNumber) {
+      await this.addNumber(phoneNumber);
+      const index = this.phoneNumbers.findIndex(p => p.number === phoneNumber);
+      this.phoneNumbers.splice(index, 1);
+    },
     sleep(ms) {
       return new Promise(resolve => setTimeout(resolve, ms));
     },
@@ -93,7 +99,7 @@ export default {
     },
     async addNumber(phoneNumber) {
       await axios.post(`api/phone/AddNumber`, {
-        phoneNumber
+        phoneNumber: phoneNumber.toString()
       });
     }
   }
@@ -107,6 +113,9 @@ h3 {
 }
 a {
   color: #42b983;
+}
+.toolbar {
+  white-space: nowrap;
 }
 .toolbar button {
   margin-right: 5px;

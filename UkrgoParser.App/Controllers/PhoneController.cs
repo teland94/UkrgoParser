@@ -1,5 +1,6 @@
 ﻿using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using UkrgoParser.App.ViewModels.Request;
 using UkrgoParser.BLL;
 
 namespace UkrgoParser.App.Controllers
@@ -21,10 +22,10 @@ namespace UkrgoParser.App.Controllers
             return Ok(await PhoneService.CheckNumberAsync(phoneNumber));
         }
 
-        [HttpGet(nameof(AddNumberAsync))]
-        public async Task<IActionResult> AddNumberAsync(string phoneNumber)
+        [HttpPost(nameof(AddNumber))]
+        public async Task<IActionResult> AddNumber([FromBody] AddNumberRequestModel model)
         {
-            await PhoneService.AddNumberAsync(phoneNumber);
+            await PhoneService.AddNumberAsync(model.PhoneNumber);
             return NoContent();
         }
     }
