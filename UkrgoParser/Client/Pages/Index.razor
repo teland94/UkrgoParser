@@ -1,0 +1,133 @@
+﻿@page "/"
+
+@layout EmptyLayout
+
+@using UkrgoParser.Shared
+@using UkrgoParser.Client.Dialogs
+
+@inject HttpClient Http
+@inject Blazored.LocalStorage.ILocalStorageService LocalStorage
+@inject CurrieTechnologies.Razor.Clipboard.ClipboardService Clipboard
+@inject IMatToaster Toaster
+@inject IMatDialogService MatDialogService
+
+<div class="toolbar">
+    <p>
+        <MatTextField Type="url" Value="@Url" OnInput="@(e => Url = e.Value.ToString())" Label="Url" FullWidth="true"></MatTextField>
+    </p>
+    <p>
+        <MatButton Disabled="string.IsNullOrEmpty(Url)" OnClick="@Process" Raised="true">Обновить</MatButton>
+        <MatButton OnClick="@SaveData">Сохранить</MatButton>
+    </p>
+    <p>
+        <MatProgressBar Progress="@Progress"></MatProgressBar>
+    </p>
+</div>
+@if (PhoneNumbers != null)
+{
+    <MatTable Items="@PhoneNumbers" PageSize="@PhoneNumbers.Count" ShowPaging="false">
+        <MatTableHeader>
+            <th>Действия</th>
+            <th>Номер</th>
+            <th>Ссылка</th>
+        </MatTableHeader>
+        <MatTableRow>
+            <td class="toolbar">
+                <MatIconButton Icon="@MatIconNames.File_copy" OnClick="@(async e => await CopyPhoneNumber(context.Number, e))"></MatIconButton>
+                <MatIconButton Icon="@MatIconNames.Block" OnClick="@(async e => await AddPhoneNumber(context.Number, e))"></MatIconButton>
+                <MatIconButton Icon="@MatIconNames.Open_in_new" OnClick="@(async e => await ShowPostDetails(context.PostLink, e))"></MatIconButton>
+            </td>
+            <td>@context.Number</td>
+            <td>
+                <a href="@context.PostLink" target="_blank">@context.PostLink.Replace("http://kharkov.ukrgo.com/", "")</a>
+            </td>
+        </MatTableRow>
+    </MatTable>
+}
+
+@code {
+
+    private string Url { get; set; }
+    private IList<PhoneNumber> PhoneNumbers { get; set; }
+    private double Progress { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (await LocalStorage.ContainKeyAsync("url") && await LocalStorage.ContainKeyAsync("phoneNumbers"))
+        {
+            try
+            {
+                Url = await LocalStorage.GetItemAsStringAsync("url");
+                PhoneNumbers = await LocalStorage.GetItemAsync<IList<PhoneNumber>>("phoneNumbers");
+            }
+            catch (Exception)
+            {
+                await LocalStorage.RemoveItemAsync("url");
+                await LocalStorage.RemoveItemAsync("phoneNumbers");
+            }
+        }
+    }
+
+    private async Task Process(MouseEventArgs e)
+    {
+        PhoneNumbers = new List<PhoneNumber>();
+        Progress = 0.0;
+
+        var postLinks = await Http.GetFromJsonAsync<IList<string>>($"api/browser/GetPostLinks?url={Url}");
+        var step = (double)1 / postLinks.Count;
+        foreach (var postLink in postLinks)
+        {
+            await Task.Delay(300);
+            var phoneNumber = await Http.GetStringAsync($"api/browser/GetPhoneNumber?postLink={postLink}");
+            if (string.IsNullOrEmpty(phoneNumber))
+            {
+                Progress += step;
+                continue;
+            }
+            var validNumberStr = await Http.GetStringAsync($"api/phone/CheckNumber?phoneNumber={phoneNumber}");
+            var validNumber = Convert.ToBoolean(validNumberStr);
+            if (validNumber && PhoneNumbers.All(p => p.Number != phoneNumber))
+            {
+                PhoneNumbers.Add(new PhoneNumber { Number = phoneNumber, PostLink = postLink });
+            }
+            Progress += step;
+            StateHasChanged();
+        }
+    }
+
+
+    private async Task SaveData(MouseEventArgs e)
+    {
+        await LocalStorage.SetItemAsync("url", Url);
+        await LocalStorage.SetItemAsync("phoneNumbers", PhoneNumbers);
+        Toaster.Add("Данные успешно сохранены", MatToastType.Success);
+    }
+
+    private async Task CopyPhoneNumber(string phoneNumber, MouseEventArgs e)
+    {
+        await Clipboard.WriteTextAsync(phoneNumber);
+        Toaster.Add($"Телефон {phoneNumber} успешно скопирован", MatToastType.Success);
+    }
+
+    private async Task AddPhoneNumber(string phoneNumber, MouseEventArgs e)
+    {
+        await Http.PostAsJsonAsync("api/phone/AddNumber", new
+        {
+            PhoneNumber = phoneNumber
+        });
+        PhoneNumbers.RemoveAt(PhoneNumbers.FindIndex(p => p.Number == phoneNumber));
+        Toaster.Add($"Телефон {phoneNumber} успешно заблокирован", MatToastType.Success);
+    }
+
+    private async Task ShowPostDetails(string postLink, MouseEventArgs e)
+    {
+        var post = await Http.GetFromJsonAsync<Post>($"api/browser/GetPostDetails?postLink={postLink}");
+        await MatDialogService.OpenAsync(typeof(PostDetailsDialog), new MatDialogOptions
+        {
+            Attributes = new Dictionary<string, object>()
+            {
+                { "Post", post }          
+            }
+        });
+    }
+}

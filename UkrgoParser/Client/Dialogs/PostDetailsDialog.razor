@@ -1,0 +1,42 @@
+﻿@using UkrgoParser.Shared
+
+@inject IJSRuntime JsRuntime
+
+<MatDialogTitle style="display: flex; align-items: center;">
+    <div style="flex: 1;">Post Details</div>
+    <div @onclick="@(_ => CloseDialog())" style="cursor: pointer;">
+        <MatIcon Icon="@MatIconNames.Close"></MatIcon>
+    </div>
+</MatDialogTitle>
+<MatDialogContent>
+    <p>
+        @((MarkupString)Post.Attributes)
+    </p>
+    <p>
+        @Post.Description
+    </p>
+    @foreach (var image in Post.Images)
+    {
+        <p>
+            <img src="data:image/jpg;base64, @Convert.ToBase64String(image)" />
+        </p>
+    }
+</MatDialogContent>
+<MatDialogActions>
+    <MatButton OnClick="@(_ => CloseDialog())">OK</MatButton>
+</MatDialogActions>
+
+@code {
+
+    [Parameter]
+    public Post Post { get; set; }
+
+    [CascadingParameter]
+    public MatDialogReference DialogReference { get; set; }
+
+    private async Task CloseDialog()
+    {
+        DialogReference.Close(null);
+        await JsRuntime.InvokeAsync<object>("makeWindowScrollbarVisibleIfNeeded");
+    }
+}
