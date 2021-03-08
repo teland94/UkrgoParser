@@ -1,7 +1,7 @@
 ﻿using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using UkrgoParser.Server.Models.Request;
 using UkrgoParser.Server.Services;
-using UkrgoParser.Server.ViewModels.Request;
 
 namespace UkrgoParser.Server.Controllers
 {

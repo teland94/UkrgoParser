@@ -3,7 +3,7 @@
 @inject IJSRuntime JsRuntime
 
 <MatDialogTitle style="display: flex; align-items: center;">
-    <div style="flex: 1;">Post Details</div>
+    <div style="flex: 1;">@Post.Title</div>
     <div @onclick="@(_ => CloseDialog())" style="cursor: pointer;">
         <MatIcon Icon="@MatIconNames.Close"></MatIcon>
     </div>

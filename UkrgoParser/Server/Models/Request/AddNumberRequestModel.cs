@@ -1,4 +1,4 @@
-﻿namespace UkrgoParser.Server.ViewModels.Request
+﻿namespace UkrgoParser.Server.Models.Request
 {
     public class AddNumberRequestModel
     {

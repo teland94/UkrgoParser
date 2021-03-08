@@ -4,6 +4,8 @@ namespace UkrgoParser.Shared
 {
     public class Post
     {
+        public string Title { get; set; }
+
         public string Attributes { get; set; }
 
         public string Description { get; set; }

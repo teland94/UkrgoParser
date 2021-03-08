@@ -1,4 +1,5 @@
-﻿using System.Net.Http;
+﻿using System;
+using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using UkrgoParser.Server.Services;
@@ -17,11 +18,11 @@ namespace UkrgoParser.Server.Controllers
         }
 
         [HttpGet(nameof(GetPostLinks))]
-        public async Task<IActionResult> GetPostLinks([FromQuery] string url)
+        public async Task<IActionResult> GetPostLinks([FromQuery] Uri uri)
         {
             try
             {
-                return Ok(await BrowserService.GetPostLinksAsync(url));
+                return Ok(await BrowserService.GetPostLinksAsync(uri));
             }
             catch (HttpRequestException e)
             {
@@ -30,11 +31,11 @@ namespace UkrgoParser.Server.Controllers
         }
 
         [HttpGet(nameof(GetPhoneNumber))]
-        public async Task<IActionResult> GetPhoneNumber([FromQuery] string postLink)
+        public async Task<IActionResult> GetPhoneNumber([FromQuery] Uri postLinkUri)
         {
             try
             {
-                return Ok(await BrowserService.GetPhoneNumberAsync(postLink));
+                return Ok(await BrowserService.GetPhoneNumberAsync(postLinkUri));
             }
             catch (HttpRequestException e)
             {
@@ -43,11 +44,11 @@ namespace UkrgoParser.Server.Controllers
         }
 
         [HttpGet(nameof(GetPostDetails))]
-        public async Task<IActionResult> GetPostDetails([FromQuery] string postLink)
+        public async Task<IActionResult> GetPostDetails([FromQuery] Uri postLinkUri)
         {
             try
             {
-                return Ok(await BrowserService.GetPostDetails(postLink));
+                return Ok(await BrowserService.GetPostDetails(postLinkUri));
             }
             catch (HttpRequestException e)
             {
