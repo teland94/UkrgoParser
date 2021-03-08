@@ -1,0 +1,7 @@
+﻿.toolbar {
+    white-space: nowrap;
+}
+
+.toolbar button {
+    margin-right: 5px;
+}
