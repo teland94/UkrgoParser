@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Net.Http;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using UkrgoParser.Server.Services;
 
@@ -18,19 +19,40 @@ namespace UkrgoParser.Server.Controllers
         [HttpGet(nameof(GetPostLinks))]
         public async Task<IActionResult> GetPostLinks([FromQuery] string url)
         {
-            return Ok(await BrowserService.GetPostLinksAsync(url));
+            try
+            {
+                return Ok(await BrowserService.GetPostLinksAsync(url));
+            }
+            catch (HttpRequestException e)
+            {
+                return e.StatusCode != null ? StatusCode((int)e.StatusCode) : BadRequest();
+            }
         }
 
         [HttpGet(nameof(GetPhoneNumber))]
         public async Task<IActionResult> GetPhoneNumber([FromQuery] string postLink)
         {
-            return Ok(await BrowserService.GetPhoneNumberAsync(postLink));
+            try
+            {
+                return Ok(await BrowserService.GetPhoneNumberAsync(postLink));
+            }
+            catch (HttpRequestException e)
+            {
+                return e.StatusCode != null ? StatusCode((int)e.StatusCode) : BadRequest();
+            }
         }
 
         [HttpGet(nameof(GetPostDetails))]
         public async Task<IActionResult> GetPostDetails([FromQuery] string postLink)
         {
-            return Ok(await BrowserService.GetPostDetails(postLink));
+            try
+            {
+                return Ok(await BrowserService.GetPostDetails(postLink));
+            }
+            catch (HttpRequestException e)
+            {
+                return e.StatusCode != null ? StatusCode((int)e.StatusCode) : BadRequest();
+            }
         }
     }
 }

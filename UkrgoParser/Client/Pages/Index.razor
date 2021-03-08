@@ -4,6 +4,7 @@
 
 @using UkrgoParser.Shared
 @using UkrgoParser.Client.Dialogs
+@using System.Net
 
 @inject HttpClient Http
 @inject Blazored.LocalStorage.ILocalStorageService LocalStorage
@@ -77,21 +78,32 @@
         var step = (double)1 / postLinks.Count;
         foreach (var postLink in postLinks)
         {
-            await Task.Delay(300);
-            var phoneNumber = await Http.GetStringAsync($"api/browser/GetPhoneNumber?postLink={postLink}");
-            if (string.IsNullOrEmpty(phoneNumber))
+            try
+            {
+                await Task.Delay(300);
+                var phoneNumber = await Http.GetStringAsync($"api/browser/GetPhoneNumber?postLink={postLink}");
+                if (string.IsNullOrEmpty(phoneNumber))
+                {
+                    Progress += step;
+                    StateHasChanged();
+                    continue;
+                }
+                var validNumberStr = await Http.GetStringAsync($"api/phone/CheckNumber?phoneNumber={phoneNumber}");
+                var validNumber = Convert.ToBoolean(validNumberStr);
+                if (validNumber && PhoneNumbers.All(p => p.Number != phoneNumber))
+                {
+                    PhoneNumbers.Add(new PhoneNumber {Number = phoneNumber, PostLink = postLink});
+                }
+            }
+            catch (HttpRequestException ex)
+            {
+                Console.WriteLine(ex);
+            }
+            finally
             {
                 Progress += step;
-                continue;
+                StateHasChanged();
             }
-            var validNumberStr = await Http.GetStringAsync($"api/phone/CheckNumber?phoneNumber={phoneNumber}");
-            var validNumber = Convert.ToBoolean(validNumberStr);
-            if (validNumber && PhoneNumbers.All(p => p.Number != phoneNumber))
-            {
-                PhoneNumbers.Add(new PhoneNumber { Number = phoneNumber, PostLink = postLink });
-            }
-            Progress += step;
-            StateHasChanged();
         }
     }
 
@@ -121,13 +133,23 @@
 
     private async Task ShowPostDetails(string postLink, MouseEventArgs e)
     {
-        var post = await Http.GetFromJsonAsync<Post>($"api/browser/GetPostDetails?postLink={postLink}");
-        await MatDialogService.OpenAsync(typeof(PostDetailsDialog), new MatDialogOptions
+        try
         {
-            Attributes = new Dictionary<string, object>()
+            var post = await Http.GetFromJsonAsync<Post>($"api/browser/GetPostDetails?postLink={postLink}");
+            await MatDialogService.OpenAsync(typeof(PostDetailsDialog), new MatDialogOptions
             {
-                { "Post", post }          
+                Attributes = new Dictionary<string, object>()
+                {
+                    { "Post", post }
+                }
+            });
+        }
+        catch (HttpRequestException ex)
+        {
+            if (ex.StatusCode == HttpStatusCode.NotFound)
+            { 
+                Toaster.Add($"Страница не найдена", MatToastType.Danger);
             }
-        });
+        }
     }
 }

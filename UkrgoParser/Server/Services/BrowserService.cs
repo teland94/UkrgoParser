@@ -125,7 +125,11 @@ namespace UkrgoParser.Server.Services
         private async Task LoadPageAsync(string url)
         {
             using var http = new HttpClient();
-            var source = await http.GetStringAsync(url);
+            var response = await http.GetAsync(url);
+
+            response.EnsureSuccessStatusCode();
+
+            var source = await response.Content.ReadAsStringAsync();
             source = WebUtility.HtmlDecode(source);
 
             _doc.LoadHtml(source);
