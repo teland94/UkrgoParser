@@ -1,9 +1,11 @@
-﻿using UkrgoParser.Shared;
+﻿using UkrgoParser.Shared.Models.Entities;
 
 namespace UkrgoParser.Client.ViewModels
 {
-    public class PostLinkViewModel : PostLink
+    public class PostLinkViewModel
     {
-        public string Number { get; set; }
+        public PostLink PostLink { get; set; }
+
+        public Contact Contact { get; set; }
     }
 }

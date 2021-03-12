@@ -1,7 +1,25 @@
-﻿.toolbar {
+﻿.row-controls {
     white-space: nowrap;
 }
 
-.toolbar button {
+.contact-panel {
+    display: flex;
+    align-items: center;
+}
+
+.contact {
+    display: flex;
+    flex-direction: column;
     margin-right: 5px;
+}
+
+.contact .contact-number {
+    color: #007bff;
+}
+
+.contact .contact-name {
+    font-size: 80%;
+    font-weight: 400;
+    text-align: center;
+    color: #17a2b8;
 }

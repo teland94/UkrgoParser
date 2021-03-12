@@ -2,29 +2,17 @@
 
 @layout EmptyLayout
 
-@using UkrgoParser.Shared
-@using UkrgoParser.Client.Dialogs
-@using System.Net
-@using UkrgoParser.Client.ViewModels
-
-@inject HttpClient Http
-@inject Blazored.LocalStorage.ILocalStorageService LocalStorage
-@inject CurrieTechnologies.Razor.Clipboard.ClipboardService Clipboard
-@inject IMatToaster Toaster
-@inject IMatDialogService MatDialogService
-
-<div class="toolbar">
-    <p>
-        <MatTextField Type="url" Value="@Url" OnInput="@(e => Url = e.Value.ToString())" Label="Url" FullWidth="true"></MatTextField>
-    </p>
-    <p>
-        <MatButton Disabled="string.IsNullOrEmpty(Url)" OnClick="@Process" Raised="true">Обновить</MatButton>
-        <MatButton OnClick="@SaveData">Сохранить</MatButton>
-    </p>
-    <p>
-        <MatProgressBar Progress="@Progress"></MatProgressBar>
-    </p>
-</div>
+<p>
+    <MatTextField Type="url" Value="@Url" OnInput="@(e => Url = e.Value.ToString())"
+                  Label="Url" Placeholder="Пример: http://kharkov.ukrgo.com/view_section.php?id_section=17" FullWidth="true"></MatTextField>
+</p>
+<p>
+    <MatButton Disabled="string.IsNullOrEmpty(Url)" OnClick="@Process" Raised="true">Обновить</MatButton>
+    <MatButton OnClick="@SaveData">Сохранить</MatButton>
+</p>
+<p>
+    <MatProgressBar Progress="@Progress"></MatProgressBar>
+</p>
 @if (PostLinks != null)
 {
     <MatTable Items="@PostLinks" PageSize="@PostLinks.Count" ShowPaging="false">
@@ -34,146 +22,24 @@
             <th>Ссылка</th>
         </MatTableHeader>
         <MatTableRow>
-            <td class="toolbar">
-                <MatIconButton Icon="@MatIconNames.File_copy" OnClick="@(async e => await CopyPhoneNumber(context.Number, e))"></MatIconButton>
-                <MatIconButton Icon="@MatIconNames.Block" OnClick="@(async e => await AddPhoneNumber(context.Number, e))"></MatIconButton>
-                <MatIconButton Icon="@MatIconNames.Open_in_new" OnClick="@(async e => await ShowPostDetails(context.Uri, e))"></MatIconButton>
-                <MatIconButton Icon="@MatIconNames.Chat" Link="@GetViberUrl(context.Number)"></MatIconButton>
+            <td class="row-controls">
+                <MatIconButton Icon="@MatIconNames.File_copy" OnClick="@(async e => await CopyPhoneNumber(context.Contact.PhoneNumber, e))"></MatIconButton>
+                <MatIconButton Icon="@MatIconNames.Block" OnClick="@(async e => await BlockPhoneNumber(context.Contact.PhoneNumber, e))"></MatIconButton>
+                <MatIconButton Icon="@MatIconNames.Open_in_new" OnClick="@(async e => await ShowPostDetails(context.PostLink.Uri, e))"></MatIconButton>
+                <MatIconButton Icon="@MatIconNames.Chat" Link="@GetViberUrl(context.Contact.PhoneNumber)"></MatIconButton>
             </td>
-            <td>@context.Number</td>
             <td>
-                <a href="@context.Uri.ToString()" target="_blank">@context.Caption</a>
+                <div class="contact-panel">
+                    <div class="contact">
+                        <span class="contact-number">@context.Contact.PhoneNumber</span>
+                        <span class="contact-name">@context.Contact.Name</span>
+                    </div>
+                    <MatIconButton Icon="@MatIconNames.Contact_phone" OnClick="@(async e => await EditContact(context.Contact.PhoneNumber, e))"></MatIconButton>
+                </div>
+            </td>
+            <td>
+                <a href="@context.PostLink.Uri.ToString()" target="_blank">@context.PostLink.Caption</a>
             </td>
         </MatTableRow>
     </MatTable>
-}
-
-@code {
-
-    private string Url { get; set; }
-    private IList<PostLinkViewModel> PostLinks { get; set; }
-    private double Progress { get; set; }
-
-    protected override async Task OnInitializedAsync()
-    {
-        if (await LocalStorage.ContainKeyAsync("url") && await LocalStorage.ContainKeyAsync("postLinks"))
-        {
-            try
-            {
-                Url = await LocalStorage.GetItemAsStringAsync("url");
-                PostLinks = await LocalStorage.GetItemAsync<IList<PostLinkViewModel>>("postLinks");
-            }
-            catch (Exception)
-            {
-                await LocalStorage.ClearAsync();
-            }
-        }
-    }
-
-    private async Task Process(MouseEventArgs e)
-    {
-        PostLinks = new List<PostLinkViewModel>();
-        Progress = 0.0;
-
-        var postLinks = await Http.GetFromJsonAsync<IList<PostLink>>($"api/browser/GetPostLinks?uri={Url}");
-        var step = (double)1 / postLinks.Count;
-        foreach (var postLink in postLinks)
-        {
-            try
-            {
-                await Task.Delay(300);
-                var phoneNumber = await Http.GetStringAsync($"api/browser/GetPhoneNumber?postLinkUri={postLink.Uri}");
-                if (string.IsNullOrEmpty(phoneNumber))
-                {
-                    Progress += step;
-                    StateHasChanged();
-                    continue;
-                }
-                var validNumberStr = await Http.GetStringAsync($"api/phone/CheckNumber?phoneNumber={phoneNumber}");
-                var validNumber = Convert.ToBoolean(validNumberStr);
-                if (validNumber && PostLinks.All(p => p.Number != phoneNumber))
-                {
-                    PostLinks.Add(new PostLinkViewModel {Number = phoneNumber, Caption = postLink.Caption, Uri = postLink.Uri});
-                }
-                Progress += step;
-                StateHasChanged();
-            }
-            catch (HttpRequestException ex)
-            {
-                Console.WriteLine(ex);
-                if (ex.StatusCode != HttpStatusCode.NotFound)
-                {
-                    Progress = 0.0;
-                    StateHasChanged();
-                    Toaster.Add($"Ошибка обработки данных", MatToastType.Danger);
-                    break;
-                }
-                Progress += step;
-                StateHasChanged();
-            }
-        }
-    }
-
-
-    private async Task SaveData(MouseEventArgs e)
-    {
-        await LocalStorage.SetItemAsync("url", Url);
-        await LocalStorage.SetItemAsync("postLinks", PostLinks);
-        Toaster.Add("Данные успешно сохранены", MatToastType.Success);
-    }
-
-    private async Task CopyPhoneNumber(string phoneNumber, MouseEventArgs e)
-    {
-        await Clipboard.WriteTextAsync(phoneNumber);
-        Toaster.Add($"Телефон {phoneNumber} успешно скопирован", MatToastType.Success);
-    }
-
-    private async Task AddPhoneNumber(string phoneNumber, MouseEventArgs e)
-    {
-        await Http.PostAsJsonAsync("api/phone/AddNumber", new
-        {
-            PhoneNumber = phoneNumber
-        });
-        PostLinks.RemoveAt(PostLinks.FindIndex(p => p.Number == phoneNumber));
-        Toaster.Add($"Телефон {phoneNumber} успешно заблокирован", MatToastType.Success);
-    }
-
-    private async Task ShowPostDetails(Uri postLinkUri, MouseEventArgs e)
-    {
-        try
-        {
-            var post = await Http.GetFromJsonAsync<Post>($"api/browser/GetPostDetails?postLinkUri={postLinkUri}");
-            await MatDialogService.OpenAsync(typeof(PostDetailsDialog), new MatDialogOptions
-            {
-                Attributes = new Dictionary<string, object>()
-                {
-                    { "Post", post }
-                }
-            });
-        }
-        catch (HttpRequestException ex)
-        {
-            if (ex.StatusCode == HttpStatusCode.NotFound)
-            {
-                Toaster.Add($"Страница не найдена", MatToastType.Danger);
-            }
-        }
-    }
-
-    private string GetViberUrl(string phoneNumber)
-    {
-        var trimmedPhoneNumber = phoneNumber.Trim();
-        var fullPhoneNumber = trimmedPhoneNumber;
-        const string countryCode = "380";
-        const string internalCountryCode = "0";
-        if (trimmedPhoneNumber.StartsWith("+"))
-        {
-            fullPhoneNumber = $"{trimmedPhoneNumber[1..]}";
-        }
-        if (trimmedPhoneNumber.StartsWith(internalCountryCode))
-        {
-            fullPhoneNumber = $"{countryCode}{trimmedPhoneNumber[1..]}";
-        }
-        return $"viber://chat?number={fullPhoneNumber}";
-    }
 }

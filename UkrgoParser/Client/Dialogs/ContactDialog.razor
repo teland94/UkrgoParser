@@ -1,0 +1,35 @@
+﻿@using UkrgoParser.Shared.Models.Entities
+
+@inject IJSRuntime JsRuntime
+
+<MatDialogTitle class="dialog-title">
+    <div class="title icon-title">
+        <MatIcon Icon="@MatIconNames.Contact_phone"></MatIcon>
+        <span>@Contact.PhoneNumber</span>
+    </div>
+    <div @onclick="@(_ => CloseDialog())" class="close">
+        <MatIcon Icon="@MatIconNames.Close"></MatIcon>
+    </div>
+</MatDialogTitle>
+<MatDialogContent>
+    <MatTextField Label="Имя" Placeholder="Введите имя контакта" @bind-Value="@Contact.Name" FullWidth="true"></MatTextField>
+</MatDialogContent>
+<MatDialogActions>
+    <MatButton OnClick="@(_ => CloseDialog(Contact))">Ок</MatButton>
+    <MatButton OnClick="@(_ => CloseDialog())">Отмена</MatButton>
+</MatDialogActions>
+
+@code {
+
+    [Parameter]
+    public Contact Contact { get; set; }
+
+    [CascadingParameter]
+    public MatDialogReference DialogReference { get; set; }
+
+    private async Task CloseDialog(object result = null)
+    {
+        DialogReference.Close(result);
+        await JsRuntime.InvokeAsync<object>("makeWindowScrollbarVisibleIfNeeded");
+    }
+}

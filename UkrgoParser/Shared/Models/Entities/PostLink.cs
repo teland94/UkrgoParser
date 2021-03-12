@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace UkrgoParser.Shared
+namespace UkrgoParser.Shared.Models.Entities
 {
     public class PostLink
     {

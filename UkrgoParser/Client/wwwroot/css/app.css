@@ -48,3 +48,26 @@ a, .btn-link {
     right: 0.75rem;
     top: 0.5rem;
 }
+
+.dialog-title {
+    display: flex;
+    align-items: center;
+}
+
+.dialog-title .title {
+    flex: 1;
+    margin-right: 5px;
+}
+
+.dialog-title .icon-title {
+    display: flex;
+    align-items: center;
+}
+
+.dialog-title .icon-title .material-icons {
+    margin-right: 5px;
+}
+
+.dialog-title .close {
+    cursor: pointer;
+}

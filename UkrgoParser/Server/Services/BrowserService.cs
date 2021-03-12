@@ -7,6 +7,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using HtmlAgilityPack;
 using UkrgoParser.Shared;
+using UkrgoParser.Shared.Models.Entities;
 
 namespace UkrgoParser.Server.Services
 {
@@ -17,6 +18,8 @@ namespace UkrgoParser.Server.Services
         Task<string> GetPhoneNumberAsync(Uri postLinkUri);
 
         Task<Post> GetPostDetails(Uri postLinkUri);
+
+        Task<byte[]> GetImage(Uri imageUri);
     }
 
     public class BrowserService : IBrowserService
@@ -76,35 +79,34 @@ namespace UkrgoParser.Server.Services
             var header = detailsTable.SelectSingleNode(".//tr[1]/td/h1");
             var attributesDiv = detailsTable.SelectSingleNode(".//tr[2]/td/div");
             var descriptionDiv = detailsTable.SelectSingleNode(".//tr[3]/td/div");
-            var imagesLinks = detailsTable
+            var imageUris = detailsTable
                 .SelectNodes(".//tr[5]/td/table//tr//img")
-                .Select(elem => new Uri(postLinkUri.GetLeftPart(UriPartial.Authority) + elem.Attributes["src"].Value[1..]))
+                ?.Select(elem => new Uri(postLinkUri.GetLeftPart(UriPartial.Authority) + elem.Attributes["src"].Value[1..]))
                 .Distinct()
                 .ToList();
-
-            var imageTasks = imagesLinks.Select(LoadBytes);
-            var images = await Task.WhenAll(imageTasks);
 
             return new Post
             {
                 Title = header.InnerText.Trim(),
                 Attributes = attributesDiv.InnerHtml.Trim(),
                 Description = descriptionDiv.ChildNodes[0].InnerText.Trim(),
-                Images = images
+                ImageUris = imageUris
             };
         }
 
-
+        public async Task<byte[]> GetImage(Uri imageUri)
+        {
+            using var http = new HttpClient();
+            return await http.GetByteArrayAsync(imageUri);
+        }
 
         private async Task<string> SendPostRequestAsync(Uri uri, IDictionary<string, string> data)
         {
-            using (var http = new HttpClient())
-            {
-                var content = new FormUrlEncodedContent(data);
+            using var http = new HttpClient();
+            var content = new FormUrlEncodedContent(data);
 
-                var res = await http.PostAsync(uri, content);
-                return await res.Content.ReadAsStringAsync();
-            }
+            var res = await http.PostAsync(uri, content);
+            return await res.Content.ReadAsStringAsync();
         }
 
         private IEnumerable<string> GetFuncArgs(string func)
@@ -117,12 +119,6 @@ namespace UkrgoParser.Server.Services
             var matches = Regex.Matches(innerArgs, extractArgsRegex);
 
             return matches.OfType<Match>().Select(m => m.Value.Replace("'", "").Replace(" ", ""));
-        }
-
-        private async Task<byte[]> LoadBytes(Uri uri)
-        {
-            using var http = new HttpClient();
-            return await http.GetByteArrayAsync(uri);
         }
 
         private async Task LoadPageAsync(Uri uri)

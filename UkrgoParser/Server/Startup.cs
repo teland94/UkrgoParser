@@ -27,10 +27,13 @@ namespace UkrgoParser.Server
             services.AddControllersWithViews();
             services.AddRazorPages();
 
+            services.AddSwaggerGen();
+
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
 
             services.AddTransient<IBrowserService, BrowserService>();
-            services.AddTransient<IPhoneService, PhoneService>();
+            services.AddTransient<IBlacklistService, BlacklistService>();
+            services.AddTransient<IContactService, ContactService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -51,6 +54,13 @@ namespace UkrgoParser.Server
             app.UseHttpsRedirection();
             app.UseBlazorFrameworkFiles();
             app.UseStaticFiles();
+
+            app.UseSwagger();
+
+            app.UseSwaggerUI(c =>
+            {
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "UkrgoParser API");
+            });
 
             app.UseRouting();
 

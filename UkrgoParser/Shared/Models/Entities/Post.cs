@@ -1,6 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
-namespace UkrgoParser.Shared
+namespace UkrgoParser.Shared.Models.Entities
 {
     public class Post
     {
@@ -10,6 +11,6 @@ namespace UkrgoParser.Shared
 
         public string Description { get; set; }
 
-        public IList<byte[]> Images { get; set; }
+        public IList<Uri> ImageUris { get; set; }
     }
 }

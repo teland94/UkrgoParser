@@ -1,10 +1,11 @@
-﻿@using UkrgoParser.Shared
+﻿@using UkrgoParser.Shared.Models.Entities
 
+@inject HttpClient Http
 @inject IJSRuntime JsRuntime
 
-<MatDialogTitle style="display: flex; align-items: center;">
-    <div style="flex: 1;">@Post.Title</div>
-    <div @onclick="@(_ => CloseDialog())" style="cursor: pointer;">
+<MatDialogTitle class="dialog-title">
+    <div class="title">@Post.Title</div>
+    <div @onclick="@(_ => CloseDialog())" class="close">
         <MatIcon Icon="@MatIconNames.Close"></MatIcon>
     </div>
 </MatDialogTitle>
@@ -15,15 +16,18 @@
     <p>
         @Post.Description
     </p>
-    @foreach (var image in Post.Images)
-    {
-        <p>
-            <img src="data:image/jpg;base64, @Convert.ToBase64String(image)" />
-        </p>
+    @{
+        if (Post.ImageUris == null) return;
+        foreach (var imageUri in Post.ImageUris)
+        {
+            <p>
+                <img src="@($"api/browser/GetImage?imageUri={imageUri}")" />
+            </p>
+        }
     }
 </MatDialogContent>
 <MatDialogActions>
-    <MatButton OnClick="@(_ => CloseDialog())">OK</MatButton>
+    <MatButton OnClick="@(_ => CloseDialog())">Ок</MatButton>
 </MatDialogActions>
 
 @code {

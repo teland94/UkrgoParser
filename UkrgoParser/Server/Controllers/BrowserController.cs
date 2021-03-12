@@ -55,5 +55,18 @@ namespace UkrgoParser.Server.Controllers
                 return e.StatusCode != null ? StatusCode((int)e.StatusCode) : BadRequest();
             }
         }
+
+        [HttpGet(nameof(GetImage))]
+        public async Task<IActionResult> GetImage([FromQuery] Uri imageUri)
+        {
+            try
+            {
+                return File(await BrowserService.GetImage(imageUri), "image/jpeg");
+            }
+            catch (HttpRequestException e)
+            {
+                return e.StatusCode != null ? StatusCode((int)e.StatusCode) : BadRequest();
+            }
+        }
     }
 }
