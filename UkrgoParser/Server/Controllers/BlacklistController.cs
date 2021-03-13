@@ -16,16 +16,29 @@ namespace UkrgoParser.Server.Controllers
             BlacklistService = phoneService;
         }
 
+        [HttpGet]
+        public async Task<IActionResult> GetPhoneNumbers()
+        {
+            return Ok(await BlacklistService.GetPhoneNumbersAsync());
+        }
+
         [HttpGet(nameof(CheckNumber))]
         public async Task<IActionResult> CheckNumber(string phoneNumber)
         {
             return Ok(await BlacklistService.CheckNumberAsync(phoneNumber));
         }
 
-        [HttpPost(nameof(AddPhoneNumber))]
+        [HttpPost]
         public async Task<IActionResult> AddPhoneNumber([FromBody] BlockNumberRequestModel model)
         {
             await BlacklistService.AddPhoneNumberAsync(model.PhoneNumber);
+            return NoContent();
+        }
+
+        [HttpDelete]
+        public async Task<IActionResult> DeletePhoneNumber(string phoneNumber)
+        {
+            await BlacklistService.DeletePhoneNumberAsync(phoneNumber);
             return NoContent();
         }
     }

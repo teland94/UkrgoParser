@@ -1,0 +1,44 @@
+﻿@page "/blacklist"
+
+@using UkrgoParser.Client.HttpClients
+@using UkrgoParser.Client.ViewModels
+
+@inject BlacklistHttpClient BlacklistHttpClient
+@inject IMatToaster MatToaster
+
+@if (BlacklistItems != null)
+{
+    <MatTable Items="@BlacklistItems" PageSize="@BlacklistItems.Count" ShowPaging="false"
+              FilterByColumnName="PhoneNumber" SearchTermFieldLabel="Фильтр" SearchTermFieldPlaceHolder="Номер телефона" DebounceMilliseconds="150">
+        <MatTableHeader>
+            <th>Действия</th>
+            <th>Номер</th>
+        </MatTableHeader>
+        <MatTableRow>
+            <td class="row-controls">
+                <MatIconButton Icon="@MatIconNames.Delete" OnClick="@(async e => await DeletePhoneNumber(context.PhoneNumber, e))"></MatIconButton>
+            </td>
+            <td>@context.PhoneNumber</td>
+        </MatTableRow>
+    </MatTable>
+}
+
+@code {
+    private IList<BlacklistItemViewModel> BlacklistItems { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var phoneNumbers = await BlacklistHttpClient.GetPhoneNumbersAsync();
+        BlacklistItems = phoneNumbers.Select(p => new BlacklistItemViewModel
+        {
+            PhoneNumber = p
+        }).ToList();
+    }
+
+    private async Task DeletePhoneNumber(string phoneNumber, MouseEventArgs e)
+    {
+        await BlacklistHttpClient.DeletePhoneNumberAsync(phoneNumber);
+        BlacklistItems.RemoveAt(BlacklistItems.FindIndex(bi => bi.PhoneNumber == phoneNumber));
+        MatToaster.Add($"Телефон {phoneNumber} успешно удален", MatToastType.Success);
+    }
+}

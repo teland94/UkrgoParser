@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Blazored.LocalStorage;
 using CurrieTechnologies.Razor.Clipboard;
 using MatBlazor;
+using UkrgoParser.Client.HttpClients;
 
 namespace UkrgoParser.Client
 {
@@ -21,7 +22,13 @@ namespace UkrgoParser.Client
             builder.RootComponents.Add<App>("#app");
 
             var services = builder.Services;
+
             services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
+            services.AddHttpClient<BlacklistHttpClient>(client =>
+                client.BaseAddress = new Uri($"{builder.HostEnvironment.BaseAddress}api/blacklist/"));
+            services.AddHttpClient<ContactHttpClient>(client =>
+                client.BaseAddress = new Uri($"{builder.HostEnvironment.BaseAddress}api/contact/"));
+
             services.AddMatBlazor();
             services.AddMatToaster(config =>
             {

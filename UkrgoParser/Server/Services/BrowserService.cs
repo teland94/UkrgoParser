@@ -25,10 +25,12 @@ namespace UkrgoParser.Server.Services
     public class BrowserService : IBrowserService
     {
         private readonly HtmlDocument _doc;
+        private readonly HttpClient _httpClient;
 
-        public BrowserService()
+        public BrowserService(HttpClient client)
         {
             _doc = new HtmlDocument { OptionReadEncoding = false };
+            _httpClient = client;
         }
 
         public async Task<IEnumerable<PostLink>> GetPostLinksAsync(Uri uri)
@@ -123,8 +125,7 @@ namespace UkrgoParser.Server.Services
 
         private async Task LoadPageAsync(Uri uri)
         {
-            using var http = new HttpClient();
-            var response = await http.GetAsync(uri);
+            var response = await _httpClient.GetAsync(uri);
 
             response.EnsureSuccessStatusCode();
 

@@ -4,11 +4,13 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Json;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using MatBlazor;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using UkrgoParser.Client.Dialogs;
+using UkrgoParser.Client.HttpClients;
 using UkrgoParser.Client.ViewModels;
 using UkrgoParser.Shared.Models.Entities;
 using UkrgoParser.Shared.Models.Request;
@@ -22,6 +24,9 @@ namespace UkrgoParser.Client.Pages
         [Inject] private CurrieTechnologies.Razor.Clipboard.ClipboardService Clipboard { get; set; }
         [Inject] private IMatToaster Toaster { get; set; }
         [Inject] private IMatDialogService MatDialogService { get; set; }
+        
+        [Inject] private BlacklistHttpClient BlacklistHttpClient { get; set; }
+        [Inject] private ContactHttpClient ContactHttpClient { get; set; }
 
         private string Url { get; set; }
         private IList<PostLinkViewModel> PostLinks { get; set; }
@@ -48,7 +53,7 @@ namespace UkrgoParser.Client.Pages
             PostLinks = new List<PostLinkViewModel>();
             Progress = 0.0;
 
-            var contacts = await Http.GetFromJsonAsync<IList<Contact>>("api/contact");
+            var contacts = await ContactHttpClient.GetContactsAsync();
 
             var postLinks = await Http.GetFromJsonAsync<IList<PostLink>>($"api/browser/GetPostLinks?uri={Url}");
             var step = (double)1 / postLinks.Count;
@@ -64,9 +69,8 @@ namespace UkrgoParser.Client.Pages
                         StateHasChanged();
                         continue;
                     }
-                    var validNumberStr = await Http.GetStringAsync($"api/blacklist/CheckNumber?phoneNumber={phoneNumber}");
-                    var validNumber = Convert.ToBoolean(validNumberStr);
-                    if (validNumber && PostLinks.All(p => p.Contact.PhoneNumber != phoneNumber))
+                    var existsInBlacklist = await BlacklistHttpClient.CheckPhoneNumberAsync(phoneNumber);
+                    if (existsInBlacklist && PostLinks.All(p => p.Contact.PhoneNumber != phoneNumber))
                     {
                         PostLinks.Add(new PostLinkViewModel
                         {
@@ -117,10 +121,7 @@ namespace UkrgoParser.Client.Pages
 
         private async Task BlockPhoneNumber(string phoneNumber, MouseEventArgs e)
         {
-            var response = await Http.PostAsJsonAsync("api/blacklist/AddPhoneNumber", new BlockNumberRequestModel
-            {
-                PhoneNumber = phoneNumber
-            });
+            var response = await BlacklistHttpClient.AddPhoneNumberAsync(phoneNumber);
             if (response.IsSuccessStatusCode)
             {
                 PostLinks.RemoveAt(PostLinks.FindIndex(p => p.Contact.PhoneNumber == phoneNumber));
@@ -139,10 +140,10 @@ namespace UkrgoParser.Client.Pages
                 var post = await Http.GetFromJsonAsync<Post>($"api/browser/GetPostDetails?postLinkUri={postLinkUri}");
                 await MatDialogService.OpenAsync(typeof(PostDetailsDialog), new MatDialogOptions
                 {
-                    Attributes = new Dictionary<string, object>()
-                {
-                    { "Post", post }
-                }
+                    Attributes = new Dictionary<string, object>
+                    {
+                        { "Post", post }
+                    }
                 });
             }
             catch (HttpRequestException ex)
@@ -162,13 +163,13 @@ namespace UkrgoParser.Client.Pages
                 .FirstOrDefault();
             var resultContact = (Contact)await MatDialogService.OpenAsync(typeof(ContactDialog), new MatDialogOptions
             {
-                Attributes = new Dictionary<string, object>()
-            {
-                { "Contact", postLinkContact }
-            }
+                Attributes = new Dictionary<string, object>
+                {
+                    { "Contact", postLinkContact }
+                }
             });
             if (resultContact == null) return;
-            await Http.PostAsJsonAsync("api/contact", resultContact);
+            await ContactHttpClient.AddContactAsync(resultContact);
             if (postLinkContact != null)
             {
                 postLinkContact.Name = resultContact.Name;
