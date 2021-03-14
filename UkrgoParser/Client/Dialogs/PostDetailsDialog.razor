@@ -21,7 +21,7 @@
         foreach (var imageUri in Post.ImageUris)
         {
             <p>
-                <img src="@($"api/browser/GetImage?imageUri={imageUri}")" />
+                <img src="@($"api/browser/GetImage?imageUri={imageUri}&cropUnwantedBackground=true")" />
             </p>
         }
     }

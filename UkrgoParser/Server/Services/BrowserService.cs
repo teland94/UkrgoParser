@@ -6,7 +6,7 @@ using System.Net.Http;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using HtmlAgilityPack;
-using UkrgoParser.Shared;
+using UkrgoParser.Server.Helpers;
 using UkrgoParser.Shared.Models.Entities;
 
 namespace UkrgoParser.Server.Services
@@ -19,7 +19,7 @@ namespace UkrgoParser.Server.Services
 
         Task<Post> GetPostDetails(Uri postLinkUri);
 
-        Task<byte[]> GetImage(Uri imageUri);
+        Task<byte[]> GetImage(Uri imageUri, bool cropUnwantedBackground = false);
     }
 
     public class BrowserService : IBrowserService
@@ -96,10 +96,11 @@ namespace UkrgoParser.Server.Services
             };
         }
 
-        public async Task<byte[]> GetImage(Uri imageUri)
+        public async Task<byte[]> GetImage(Uri imageUri, bool cropUnwantedBackground = false)
         {
             using var http = new HttpClient();
-            return await http.GetByteArrayAsync(imageUri);
+            var imageData = await http.GetByteArrayAsync(imageUri);
+            return cropUnwantedBackground ? await ImageHelper.CropUnwantedBackground(imageData) : imageData;
         }
 
         private async Task<string> SendPostRequestAsync(Uri uri, IDictionary<string, string> data)

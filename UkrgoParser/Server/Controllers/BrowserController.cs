@@ -57,11 +57,11 @@ namespace UkrgoParser.Server.Controllers
         }
 
         [HttpGet(nameof(GetImage))]
-        public async Task<IActionResult> GetImage([FromQuery] Uri imageUri)
+        public async Task<IActionResult> GetImage([FromQuery] Uri imageUri, [FromQuery] bool cropUnwantedBackground = false)
         {
             try
             {
-                return File(await BrowserService.GetImage(imageUri), "image/jpeg");
+                return File(await BrowserService.GetImage(imageUri, cropUnwantedBackground), "image/jpeg");
             }
             catch (HttpRequestException e)
             {

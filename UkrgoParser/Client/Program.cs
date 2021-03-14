@@ -24,6 +24,8 @@ namespace UkrgoParser.Client
             var services = builder.Services;
 
             services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
+            services.AddHttpClient<BrowserHttpClient>(client =>
+                client.BaseAddress = new Uri($"{builder.HostEnvironment.BaseAddress}api/browser/"));
             services.AddHttpClient<BlacklistHttpClient>(client =>
                 client.BaseAddress = new Uri($"{builder.HostEnvironment.BaseAddress}api/blacklist/"));
             services.AddHttpClient<ContactHttpClient>(client =>

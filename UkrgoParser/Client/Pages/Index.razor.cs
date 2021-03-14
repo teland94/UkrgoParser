@@ -4,7 +4,6 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Json;
-using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using MatBlazor;
 using Microsoft.AspNetCore.Components;
@@ -13,7 +12,6 @@ using UkrgoParser.Client.Dialogs;
 using UkrgoParser.Client.HttpClients;
 using UkrgoParser.Client.ViewModels;
 using UkrgoParser.Shared.Models.Entities;
-using UkrgoParser.Shared.Models.Request;
 
 namespace UkrgoParser.Client.Pages
 {
@@ -24,7 +22,8 @@ namespace UkrgoParser.Client.Pages
         [Inject] private CurrieTechnologies.Razor.Clipboard.ClipboardService Clipboard { get; set; }
         [Inject] private IMatToaster Toaster { get; set; }
         [Inject] private IMatDialogService MatDialogService { get; set; }
-        
+
+        [Inject] private BrowserHttpClient BrowserHttpClient { get; set; }
         [Inject] private BlacklistHttpClient BlacklistHttpClient { get; set; }
         [Inject] private ContactHttpClient ContactHttpClient { get; set; }
 
@@ -55,14 +54,14 @@ namespace UkrgoParser.Client.Pages
 
             var contacts = await ContactHttpClient.GetContactsAsync();
 
-            var postLinks = await Http.GetFromJsonAsync<IList<PostLink>>($"api/browser/GetPostLinks?uri={Url}");
+            var postLinks = await BrowserHttpClient.GetPostLinksAsync(new Uri(Url));
             var step = (double)1 / postLinks.Count;
             foreach (var postLink in postLinks)
             {
                 try
                 {
                     await Task.Delay(300);
-                    var phoneNumber = await Http.GetStringAsync($"api/browser/GetPhoneNumber?postLinkUri={postLink.Uri}");
+                    var phoneNumber = await BrowserHttpClient.GetPhoneNumberAsync(postLink.Uri);
                     if (string.IsNullOrEmpty(phoneNumber))
                     {
                         Progress += step;
@@ -137,7 +136,7 @@ namespace UkrgoParser.Client.Pages
         {
             try
             {
-                var post = await Http.GetFromJsonAsync<Post>($"api/browser/GetPostDetails?postLinkUri={postLinkUri}");
+                var post = await BrowserHttpClient.GetPostDetailsAsync(postLinkUri);
                 await MatDialogService.OpenAsync(typeof(PostDetailsDialog), new MatDialogOptions
                 {
                     Attributes = new Dictionary<string, object>
