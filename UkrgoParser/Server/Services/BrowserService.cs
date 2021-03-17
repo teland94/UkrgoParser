@@ -37,13 +37,19 @@ namespace UkrgoParser.Server.Services
         {
             await LoadPageAsync(uri);
 
-            return _doc.DocumentNode
-                .SelectNodes("//div[contains(@class, 'post_top')]/div[contains(@class, 'post')]//a[contains(@class, 'link_post')]|//div[contains(@class, 'main-content')]//table//td/h3/a[contains(@class, 'link_post')]")
-                .Where(elem => elem.Attributes["href"].Value.StartsWith("http"))
-                .Select(elem => new PostLink
+            var postElements = _doc.DocumentNode
+                .SelectNodes("//div[contains(@class, 'post_top')]/div[contains(@class, 'post')]|//div[contains(@class, 'main-content')]//table");
+
+            return (from postElement in postElements 
+                let postLinkElem = postElement.SelectSingleNode(".//a[contains(@class, 'link_post') and not(img)]") 
+                where postLinkElem.Attributes["href"].Value.StartsWith("http") 
+                let postImgElem = postElement.SelectSingleNode(".//img")
+                let postLinkUri = new Uri(postLinkElem.Attributes["href"].Value)
+                select new PostLink
                 {
-                    Caption = elem.InnerText.Trim(),
-                    Uri = new Uri(elem.Attributes["href"].Value)
+                    ImageUri = new Uri(postLinkUri.GetLeftPart(UriPartial.Authority) + postImgElem.Attributes["src"].Value),
+                    Caption = postLinkElem.InnerText.Trim(), 
+                    Uri = postLinkUri
                 }).ToList();
         }
 

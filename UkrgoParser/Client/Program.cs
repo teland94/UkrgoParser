@@ -8,6 +8,7 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using Blazored.LocalStorage;
+using BlazorPro.BlazorSize;
 using CurrieTechnologies.Razor.Clipboard;
 using MatBlazor;
 using UkrgoParser.Client.HttpClients;
@@ -41,6 +42,7 @@ namespace UkrgoParser.Client
             });
             services.AddBlazoredLocalStorage();
             services.AddClipboard();
+            services.AddMediaQueryService();
 
             await builder.Build().RunAsync();
         }

@@ -11,12 +11,52 @@
 <p>
     <MatProgressBar Progress="@Progress"></MatProgressBar>
 </p>
-@if (PostLinks != null)
+
+<MediaQuery Media="@Breakpoints.SmallDown" MatchesChanged="@(matched => IsSmall = matched)"></MediaQuery>
+
+@if (PostLinks == null || IsSmall == null) { return; }
+
+@if (IsSmall.Value)
+{
+    foreach (var postLink in PostLinks)
+    {
+        <MatCard class="up-mat-card">
+            <MatCardContent @onclick="@(async e => await ShowPostDetails(postLink.PostLink.Uri, e))">
+                <MatCardMedia Wide="true" ImageUrl="@($"api/browser/GetImage?imageUri={postLink.PostLink.ImageUri}&cropUnwantedBackground=true")"></MatCardMedia>
+                <div class="up-mat-card-content">
+                    <MatHeadline6 class="up-mat-card-clean-margin">
+                        @postLink.Contact.PhoneNumber
+                    </MatHeadline6>
+                    <MatSubtitle2 class="up-mat-card-clean-margin">
+                        @postLink.Contact.Name
+                    </MatSubtitle2>
+                </div>
+                <MatBody2 class="up-mat-card-content up-mat-card-clean-margin">
+                    <a href="@postLink.PostLink.Uri.ToString()" target="_blank" onclick="event.stopPropagation();">@postLink.PostLink.Caption</a>
+                </MatBody2>
+            </MatCardContent>
+            <MatCardActions>
+                <MatCardActionButtons>
+                    <MatButton OnClick="@(async e => await ShowPostDetails(postLink.PostLink.Uri, e))">Открыть</MatButton>
+                </MatCardActionButtons>
+
+                <MatCardActionIcons>
+                    <MatIconButton Icon="@MatIconNames.File_copy" OnClick="@(async e => await CopyPhoneNumber(postLink.Contact.PhoneNumber, e))"></MatIconButton>
+                    <MatIconButton Icon="@MatIconNames.Block" OnClick="@(async e => await BlockPhoneNumber(postLink.Contact.PhoneNumber, e))"></MatIconButton>
+                    <MatIconButton Icon="@MatIconNames.Chat" Link="@GetViberUrl(postLink.Contact.PhoneNumber)"></MatIconButton>
+                    <MatIconButton Icon="@MatIconNames.Contact_phone" OnClick="@(async e => await EditContact(postLink.Contact.PhoneNumber, e))"></MatIconButton>
+                </MatCardActionIcons>
+            </MatCardActions>
+        </MatCard>
+    }
+}
+else
 {
     <MatTable Items="@PostLinks" PageSize="@PostLinks.Count" ShowPaging="false">
         <MatTableHeader>
             <th>Действия</th>
-            <th>Номер</th>
+            <th>Изображение</th>
+            <th>Телефон</th>
             <th>Ссылка</th>
         </MatTableHeader>
         <MatTableRow>
@@ -25,6 +65,9 @@
                 <MatIconButton Icon="@MatIconNames.Block" OnClick="@(async e => await BlockPhoneNumber(context.Contact.PhoneNumber, e))"></MatIconButton>
                 <MatIconButton Icon="@MatIconNames.Open_in_new" OnClick="@(async e => await ShowPostDetails(context.PostLink.Uri, e))"></MatIconButton>
                 <MatIconButton Icon="@MatIconNames.Chat" Link="@GetViberUrl(context.Contact.PhoneNumber)"></MatIconButton>
+            </td>
+            <td class="image-cell">
+                <img src="@($"api/browser/GetImage?imageUri={context.PostLink.ImageUri}&cropUnwantedBackground=true")" />
             </td>
             <td>
                 <div class="contact-panel">

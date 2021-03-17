@@ -10,6 +10,8 @@ namespace UkrgoParser.Server.Controllers
     [ApiController]
     public class BrowserController : ControllerBase
     {
+        private const int CacheAgeSeconds = 60 * 60 * 24 * 30; // 30 days
+
         private IBrowserService BrowserService { get; }
 
         public BrowserController(IBrowserService browserService)
@@ -61,6 +63,8 @@ namespace UkrgoParser.Server.Controllers
         {
             try
             {
+                Response.Headers["Cache-Control"] = $"public,max-age={CacheAgeSeconds}";
+
                 return File(await BrowserService.GetImage(imageUri, cropUnwantedBackground), "image/jpeg");
             }
             catch (HttpRequestException e)

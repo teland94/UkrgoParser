@@ -10,11 +10,15 @@ namespace UkrgoParser.Server.Helpers
         public static async Task<byte[]> CropUnwantedBackground(byte[] imageData)
         {
             await using var ms = new MemoryStream(imageData);
-            var bmp = new Bitmap(ms);
-            bmp = CropUnwantedBackground(bmp);
-            await using var resultStream = new MemoryStream();
-            bmp.Save(resultStream, ImageFormat.Jpeg);
-            return resultStream.ToArray();
+            using var bmp = new Bitmap(ms);
+            using var croppedBmp = CropUnwantedBackground(bmp);
+            if (croppedBmp != null)
+            {
+                await using var resultStream = new MemoryStream();
+                croppedBmp.Save(resultStream, ImageFormat.Jpeg);
+                return resultStream.ToArray();
+            }
+            return imageData;
         }
 
         public static Bitmap CropUnwantedBackground(Bitmap bmp)

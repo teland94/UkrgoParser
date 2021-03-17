@@ -30,6 +30,7 @@ namespace UkrgoParser.Client.Pages
         private string Url { get; set; }
         private IList<PostLinkViewModel> PostLinks { get; set; }
         private double Progress { get; set; }
+        private bool? IsSmall { get; set; }
 
         protected override async Task OnInitializedAsync()
         {
@@ -75,6 +76,7 @@ namespace UkrgoParser.Client.Pages
                         {
                             PostLink = new PostLink
                             {
+                                ImageUri = postLink.ImageUri,
                                 Uri = postLink.Uri,
                                 Caption = postLink.Caption
                             },

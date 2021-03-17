@@ -71,3 +71,24 @@ a, .btn-link {
 .dialog-title .close {
     cursor: pointer;
 }
+
+.up-mat-card {
+    margin-bottom: 5px;
+}
+
+.up-mat-card-content {
+    padding: 1rem;
+}
+
+.up-mat-card-clean-margin {
+    margin: 0px;
+}
+
+.image-cell {
+    text-align: center;
+}
+
+.image-cell img {
+    max-width: 130px;
+    max-height: 130px;
+}
