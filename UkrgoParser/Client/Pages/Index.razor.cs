@@ -55,13 +55,22 @@ namespace UkrgoParser.Client.Pages
 
             var contacts = await ContactHttpClient.GetContactsAsync();
 
-            var postLinks = await BrowserHttpClient.GetPostLinksAsync(new Uri(Url));
+            IList<PostLink> postLinks = new List<PostLink>();
+            try
+            {
+                postLinks = await BrowserHttpClient.GetPostLinksAsync(new Uri(Url));
+            }
+            catch (HttpRequestException ex)
+            {
+                Console.WriteLine(ex);
+                Toaster.Add("Ошибка загрузки ссылок объявлений", MatToastType.Danger);
+            }
+
             var step = (double)1 / postLinks.Count;
             foreach (var postLink in postLinks)
             {
                 try
                 {
-                    await Task.Delay(300);
                     var phoneNumber = await BrowserHttpClient.GetPhoneNumberAsync(postLink.Uri);
                     if (string.IsNullOrEmpty(phoneNumber))
                     {
@@ -97,7 +106,7 @@ namespace UkrgoParser.Client.Pages
                     {
                         Progress = 0.0;
                         StateHasChanged();
-                        Toaster.Add("Ошибка обработки данных", MatToastType.Danger);
+                        Toaster.Add("Ошибка обработки объявлений", MatToastType.Danger);
                         break;
                     }
                     Progress += step;

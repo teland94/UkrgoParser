@@ -2,10 +2,12 @@
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using UkrgoParser.Server.Filters;
 using UkrgoParser.Server.Services;
 
 namespace UkrgoParser.Server.Controllers
 {
+    [ServiceFilter(typeof(DelayFilter))]
     [Route("api/[controller]")]
     [ApiController]
     public class BrowserController : ControllerBase

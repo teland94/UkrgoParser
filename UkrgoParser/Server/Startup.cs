@@ -4,6 +4,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System.Text;
+using UkrgoParser.Server.Filters;
 using UkrgoParser.Server.Services;
 
 namespace UkrgoParser.Server
@@ -32,6 +33,8 @@ namespace UkrgoParser.Server
 
             services.AddTransient<IBlacklistService, BlacklistService>();
             services.AddTransient<IContactService, ContactService>();
+
+            services.AddScoped<DelayFilter>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
