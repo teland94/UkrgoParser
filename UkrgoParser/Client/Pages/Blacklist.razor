@@ -5,6 +5,7 @@
 
 @inject BlacklistHttpClient BlacklistHttpClient
 @inject IMatToaster MatToaster
+@inject IMatDialogService MatDialogService
 
 @if (BlacklistItems != null)
 {
@@ -37,8 +38,11 @@
 
     private async Task DeletePhoneNumber(string phoneNumber, MouseEventArgs e)
     {
-        await BlacklistHttpClient.DeletePhoneNumberAsync(phoneNumber);
-        BlacklistItems.RemoveAt(BlacklistItems.FindIndex(bi => bi.PhoneNumber == phoneNumber));
-        MatToaster.Add($"Телефон {phoneNumber} успешно удален", MatToastType.Success);
+        if (await MatDialogService.ConfirmAsync($"Вы действительно хотите удалить телефон - {phoneNumber}?"))
+        {
+            await BlacklistHttpClient.DeletePhoneNumberAsync(phoneNumber);
+            BlacklistItems.RemoveAt(BlacklistItems.FindIndex(bi => bi.PhoneNumber == phoneNumber));
+            MatToaster.Add($"Телефон {phoneNumber} успешно удален", MatToastType.Success);
+        }
     }
 }

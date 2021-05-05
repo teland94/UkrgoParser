@@ -131,15 +131,18 @@ namespace UkrgoParser.Client.Pages
 
         private async Task BlockPhoneNumber(string phoneNumber, MouseEventArgs e)
         {
-            var response = await BlacklistHttpClient.AddPhoneNumberAsync(phoneNumber);
-            if (response.IsSuccessStatusCode)
+            if (await MatDialogService.ConfirmAsync($"Вы действительно хотите заблокировать телефон - {phoneNumber}?"))
             {
-                PostLinks.RemoveAt(PostLinks.FindIndex(p => p.Contact.PhoneNumber == phoneNumber));
-                Toaster.Add($"Телефон {phoneNumber} успешно заблокирован", MatToastType.Success);
-            }
-            else
-            {
-                Toaster.Add("Ошибка блокировки номера", MatToastType.Danger);
+                var response = await BlacklistHttpClient.AddPhoneNumberAsync(phoneNumber);
+                if (response.IsSuccessStatusCode)
+                {
+                    PostLinks.RemoveAt(PostLinks.FindIndex(p => p.Contact.PhoneNumber == phoneNumber));
+                    Toaster.Add($"Телефон {phoneNumber} успешно заблокирован", MatToastType.Success);
+                }
+                else
+                {
+                    Toaster.Add("Ошибка блокировки номера", MatToastType.Danger);
+                }
             }
         }
 

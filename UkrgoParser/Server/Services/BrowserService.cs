@@ -47,7 +47,8 @@ namespace UkrgoParser.Server.Services
                 let postLinkUri = new Uri(postLinkElem.Attributes["href"].Value)
                 select new PostLink
                 {
-                    ImageUri = new Uri(postLinkUri.GetLeftPart(UriPartial.Authority) + postImgElem.Attributes["src"].Value),
+                    ImageUri = new Uri(postLinkUri.GetLeftPart(UriPartial.Authority) 
+                                       + postImgElem.Attributes["src"].Value[postImgElem.Attributes["src"].Value.IndexOf("/", StringComparison.OrdinalIgnoreCase)..]),
                     Caption = postLinkElem.InnerText.Trim(), 
                     Uri = postLinkUri
                 }).ToList();
@@ -89,7 +90,8 @@ namespace UkrgoParser.Server.Services
             var descriptionDiv = detailsTable.SelectSingleNode(".//tr[3]/td/div");
             var imageUris = detailsTable
                 .SelectNodes(".//tr[5]/td/table//tr//img")
-                ?.Select(elem => new Uri(postLinkUri.GetLeftPart(UriPartial.Authority) + elem.Attributes["src"].Value[1..]))
+                ?.Select(elem => new Uri(postLinkUri.GetLeftPart(UriPartial.Authority) 
+                                         + elem.Attributes["src"].Value[elem.Attributes["src"].Value.IndexOf("/", StringComparison.OrdinalIgnoreCase)..]))
                 .Distinct()
                 .ToList();
 
@@ -104,17 +106,15 @@ namespace UkrgoParser.Server.Services
 
         public async Task<byte[]> GetImage(Uri imageUri, bool cropUnwantedBackground = false)
         {
-            using var http = new HttpClient();
-            var imageData = await http.GetByteArrayAsync(imageUri);
+            var imageData = await _httpClient.GetByteArrayAsync(imageUri);
             return cropUnwantedBackground ? await ImageHelper.CropUnwantedBackground(imageData) : imageData;
         }
 
         private async Task<string> SendPostRequestAsync(Uri uri, IDictionary<string, string> data)
         {
-            using var http = new HttpClient();
             var content = new FormUrlEncodedContent(data);
 
-            var res = await http.PostAsync(uri, content);
+            var res = await _httpClient.PostAsync(uri, content);
             return await res.Content.ReadAsStringAsync();
         }
 

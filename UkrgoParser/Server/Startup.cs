@@ -4,7 +4,9 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System.Text;
+using UkrgoParser.Server.Configuration;
 using UkrgoParser.Server.Filters;
+using UkrgoParser.Server.Handlers;
 using UkrgoParser.Server.Services;
 
 namespace UkrgoParser.Server
@@ -29,7 +31,11 @@ namespace UkrgoParser.Server
 
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
 
-            services.AddHttpClient<IBrowserService, BrowserService>();
+            services.Configure<ProxySettings>(Configuration.GetSection("Proxy"));
+
+            services.AddTransient<BrowserHttpClientHandler>();
+            services.AddHttpClient<IBrowserService, BrowserService>()
+                .ConfigurePrimaryHttpMessageHandler<BrowserHttpClientHandler>();
 
             services.AddTransient<IBlacklistService, BlacklistService>();
             services.AddTransient<IContactService, ContactService>();
