@@ -26,7 +26,7 @@ namespace UkrgoParser.Server.Controllers
         [HttpPost]
         public async Task Post([FromBody] Contact contact)
         {
-            await ContactService.AddContactAsync(contact);
+            await ContactService.EditContactAsync(contact);
         }
     }
 }

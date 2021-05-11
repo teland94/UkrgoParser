@@ -11,34 +11,41 @@ namespace UkrgoParser.Server.Services
 {
     public interface IContactService
     {
-        Task AddContactAsync(Contact contact);
-
         Task<IEnumerable<Contact>> GetContactsAsync();
+
+        Task EditContactAsync(Contact contact);
     }
 
     public class ContactService : IContactService
     {
-        private string FileName { get; } = "contacts.csv";
+        private string FileName => "contacts.csv";
 
-        public async Task AddContactAsync(Contact contact)
+        public async Task<IEnumerable<Contact>> GetContactsAsync()
+        {
+            return await ReadContactsAsync();
+        }
+
+        public async Task EditContactAsync(Contact contact)
         {
             var contacts = await ReadContactsAsync();
             var contactsList = new List<Contact>(contacts);
             var dbContact = contactsList.FirstOrDefault(c => c.PhoneNumber == contact.PhoneNumber);
             if (dbContact != null)
             {
-                dbContact.Name = contact.Name;
+                if (!string.IsNullOrEmpty(dbContact.Name) && string.IsNullOrEmpty(contact.Name))
+                {
+                    contactsList = contactsList.Where(c => c.PhoneNumber != contact.PhoneNumber).ToList();
+                }
+                else
+                {
+                    dbContact.Name = contact.Name;
+                }
             }
             else
             {
                 contactsList.Add(contact);
             }
             await WriteContacts(contactsList);
-        }
-
-        public async Task<IEnumerable<Contact>> GetContactsAsync()
-        {
-            return await ReadContactsAsync();
         }
 
         private async Task<IEnumerable<Contact>> ReadContactsAsync()
