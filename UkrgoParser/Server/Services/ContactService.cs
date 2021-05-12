@@ -5,17 +5,11 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using CsvHelper;
+using UkrgoParser.Server.Interfaces;
 using UkrgoParser.Shared.Models.Entities;
 
 namespace UkrgoParser.Server.Services
 {
-    public interface IContactService
-    {
-        Task<IEnumerable<Contact>> GetContactsAsync();
-
-        Task EditContactAsync(Contact contact);
-    }
-
     public class ContactService : IContactService
     {
         private string FileName => "contacts.csv";

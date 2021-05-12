@@ -2,20 +2,10 @@
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using UkrgoParser.Server.Interfaces;
 
 namespace UkrgoParser.Server.Services
 {
-    public interface IBlacklistService
-    {
-        Task<IEnumerable<string>> GetPhoneNumbersAsync();
-
-        Task<bool> CheckNumberAsync(string phoneNumber);
-
-        Task AddPhoneNumberAsync(string phoneNumber);
-
-        Task DeletePhoneNumberAsync(string phoneNumber);
-    }
-
     public class BlacklistService : IBlacklistService
     {
         private string FileName { get; } = "black-list.txt";

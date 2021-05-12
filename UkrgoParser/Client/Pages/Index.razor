@@ -2,7 +2,7 @@
 
 <p>
     <MatTextField Type="url" Value="@Url" OnInput="@(e => Url = e.Value.ToString())"
-                  Label="Url" Placeholder="Пример: http://kharkov.ukrgo.com/view_section.php?id_section=17" FullWidth="true"></MatTextField>
+                  Label="Url" Placeholder="Пример: https://www.olx.ua/nedvizhimost/kvartiry-komnaty/arenda-kvartir-komnat/kharkov" FullWidth="true"></MatTextField>
 </p>
 <p>
     <MatButton Disabled="string.IsNullOrEmpty(Url)" OnClick="@Process" Raised="true">Обновить</MatButton>
@@ -25,7 +25,7 @@
                 <MatCardMedia Wide="true" ImageUrl="@($"api/browser/GetImage?imageUri={postLink.PostLink.ImageUri}&cropUnwantedBackground=true")"></MatCardMedia>
                 <div class="up-mat-card-content">
                     <MatHeadline6 class="up-mat-card-clean-margin">
-                        <a href="@($"https://contact-info-app.azurewebsites.net/home/{postLink.Contact.PhoneNumber.Replace("+", "")}")" target="_blank">@postLink.Contact.PhoneNumber</a>
+                        <a href="@($"https://contact-info.azurewebsites.net/home/{postLink.Contact.PhoneNumber.Replace("+", "")}")" target="_blank">@postLink.Contact.PhoneNumber</a>
                     </MatHeadline6>
                     <MatSubtitle2 class="up-mat-card-clean-margin">
                         @postLink.Contact.Name
@@ -72,7 +72,7 @@ else
             <td>
                 <div class="contact-panel">
                     <div class="contact">
-                        <a href="@($"https://contact-info-app.azurewebsites.net/home/{context.Contact.PhoneNumber.Replace("+", "")}")" class="contact-number" target="_blank">@context.Contact.PhoneNumber</a>
+                        <a href="@($"https://contact-info.azurewebsites.net/home/{context.Contact.PhoneNumber.Replace("+", "")}")" class="contact-number" target="_blank">@context.Contact.PhoneNumber</a>
                         <span class="contact-name">@context.Contact.Name</span>
                     </div>
                     <MatIconButton Icon="@MatIconNames.Contact_phone" OnClick="@(async e => await EditContact(context.Contact.PhoneNumber, e))"></MatIconButton>

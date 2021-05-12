@@ -1,5 +1,6 @@
 ﻿using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using UkrgoParser.Server.Interfaces;
 using UkrgoParser.Server.Services;
 using UkrgoParser.Shared.Models.Request;
 

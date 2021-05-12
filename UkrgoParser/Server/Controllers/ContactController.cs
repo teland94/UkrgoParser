@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using UkrgoParser.Server.Interfaces;
 using UkrgoParser.Server.Services;
 using UkrgoParser.Shared.Models.Entities;
 

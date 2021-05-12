@@ -3,6 +3,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using UkrgoParser.Server.Filters;
+using UkrgoParser.Server.Interfaces;
 using UkrgoParser.Server.Services;
 
 namespace UkrgoParser.Server.Controllers

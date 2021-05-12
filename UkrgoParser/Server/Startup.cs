@@ -7,6 +7,7 @@ using System.Text;
 using UkrgoParser.Server.Configuration;
 using UkrgoParser.Server.Filters;
 using UkrgoParser.Server.Handlers;
+using UkrgoParser.Server.Interfaces;
 using UkrgoParser.Server.Services;
 
 namespace UkrgoParser.Server
@@ -32,9 +33,11 @@ namespace UkrgoParser.Server
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
 
             services.Configure<ProxySettings>(Configuration.GetSection("Proxy"));
+            services.Configure<OlxApiSettings>(Configuration.GetSection("OlxApi"));
 
             services.AddTransient<BrowserHttpClientHandler>();
-            services.AddHttpClient<IBrowserService, BrowserService>()
+
+            services.AddHttpClient<IBrowserService, OlxBrowserService>()
                 .ConfigurePrimaryHttpMessageHandler<BrowserHttpClientHandler>();
 
             services.AddTransient<IBlacklistService, BlacklistService>();

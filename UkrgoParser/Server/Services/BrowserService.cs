@@ -7,37 +7,23 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using HtmlAgilityPack;
 using UkrgoParser.Server.Helpers;
+using UkrgoParser.Server.Interfaces;
 using UkrgoParser.Shared.Models.Entities;
 
 namespace UkrgoParser.Server.Services
 {
-    public interface IBrowserService
+    public class BrowserService : BrowserBaseService, IBrowserService
     {
-        Task<IEnumerable<PostLink>> GetPostLinksAsync(Uri uri);
-
-        Task<string> GetPhoneNumberAsync(Uri postLinkUri);
-
-        Task<Post> GetPostDetails(Uri postLinkUri);
-
-        Task<byte[]> GetImage(Uri imageUri, bool cropUnwantedBackground = false);
-    }
-
-    public class BrowserService : IBrowserService
-    {
-        private readonly HtmlDocument _doc;
-        private readonly HttpClient _httpClient;
-
-        public BrowserService(HttpClient client)
+        public BrowserService(HttpClient client) : base(client)
         {
-            _doc = new HtmlDocument { OptionReadEncoding = false };
-            _httpClient = client;
+            Console.WriteLine(client);
         }
 
         public async Task<IEnumerable<PostLink>> GetPostLinksAsync(Uri uri)
         {
             await LoadPageAsync(uri);
 
-            var postElements = _doc.DocumentNode
+            var postElements = Doc.DocumentNode
                 .SelectNodes("//div[contains(@class, 'post_top')]/div[contains(@class, 'post')]|//div[contains(@class, 'main-content')]//table");
 
             return (from postElement in postElements 
@@ -47,7 +33,7 @@ namespace UkrgoParser.Server.Services
                 let postLinkUri = new Uri(postLinkElem.Attributes["href"].Value)
                 select new PostLink
                 {
-                    ImageUri = new Uri(postLinkUri.GetLeftPart(UriPartial.Authority) 
+                    ImageUri = new Uri(postLinkUri.GetLeftPart(UriPartial.Authority)
                                        + postImgElem.Attributes["src"].Value[postImgElem.Attributes["src"].Value.IndexOf("/", StringComparison.OrdinalIgnoreCase)..]),
                     Caption = postLinkElem.InnerText.Trim(), 
                     Uri = postLinkUri
@@ -58,7 +44,7 @@ namespace UkrgoParser.Server.Services
         {
             await LoadPageAsync(postLinkUri);
 
-            var postPhonesShowDiv = _doc.DocumentNode.SelectSingleNode("//div[@id='post-phones-show-div']");
+            var postPhonesShowDiv = Doc.DocumentNode.SelectSingleNode("//div[@id='post-phones-show-div']");
 
             if (postPhonesShowDiv == null) return null;
 
@@ -67,12 +53,12 @@ namespace UkrgoParser.Server.Services
 
             var funcArgs = GetFuncArgs(onCLickStr).ToArray();
             var formData = new Dictionary<string, string> { ["i"] = funcArgs[0], ["s"] = funcArgs[1] };
-            var postContactsDiv = await SendPostRequestAsync(new Uri("http://ukrgo.com/moduls/showphonesnumbers.php"), formData);
+            var postContactsDiv = await SendPostFormUrlEncodedRequestAsync(new Uri("http://ukrgo.com/moduls/showphonesnumbers.php"), formData);
 
             if (!string.IsNullOrEmpty(postContactsDiv))
             {
-                _doc.LoadHtml(postContactsDiv);
-                var postContactsSpan = _doc.DocumentNode.SelectSingleNode("//span");
+                Doc.LoadHtml(postContactsDiv);
+                var postContactsSpan = Doc.DocumentNode.SelectSingleNode("//span");
 
                 return postContactsSpan?.InnerText;
             }
@@ -84,7 +70,7 @@ namespace UkrgoParser.Server.Services
         {
             await LoadPageAsync(postLinkUri);
 
-            var detailsTable = _doc.DocumentNode.SelectSingleNode("//table[4]//table");
+            var detailsTable = Doc.DocumentNode.SelectSingleNode("//table[4]//table");
             var header = detailsTable.SelectSingleNode(".//tr[1]/td/h1");
             var attributesDiv = detailsTable.SelectSingleNode(".//tr[2]/td/div");
             var descriptionDiv = detailsTable.SelectSingleNode(".//tr[3]/td/div");
@@ -102,44 +88,6 @@ namespace UkrgoParser.Server.Services
                 Description = descriptionDiv.ChildNodes[0].InnerText.Trim(),
                 ImageUris = imageUris
             };
-        }
-
-        public async Task<byte[]> GetImage(Uri imageUri, bool cropUnwantedBackground = false)
-        {
-            var imageData = await _httpClient.GetByteArrayAsync(imageUri);
-            return cropUnwantedBackground ? await ImageHelper.CropUnwantedBackground(imageData) : imageData;
-        }
-
-        private async Task<string> SendPostRequestAsync(Uri uri, IDictionary<string, string> data)
-        {
-            var content = new FormUrlEncodedContent(data);
-
-            var res = await _httpClient.PostAsync(uri, content);
-            return await res.Content.ReadAsStringAsync();
-        }
-
-        private IEnumerable<string> GetFuncArgs(string func)
-        {
-            var extractFuncRegex = @"\b[^()]+\((.*)\)";
-            var extractArgsRegex = @"([^,]+\(.+?\))|([^,]+)";
-
-            var match = Regex.Match(func, extractFuncRegex);
-            var innerArgs = match.Groups[1].Value;
-            var matches = Regex.Matches(innerArgs, extractArgsRegex);
-
-            return matches.OfType<Match>().Select(m => m.Value.Replace("'", "").Replace(" ", ""));
-        }
-
-        private async Task LoadPageAsync(Uri uri)
-        {
-            var response = await _httpClient.GetAsync(uri);
-
-            response.EnsureSuccessStatusCode();
-
-            var source = await response.Content.ReadAsStringAsync();
-            source = WebUtility.HtmlDecode(source);
-
-            _doc.LoadHtml(source);
         }
     }
 }
