@@ -4,7 +4,6 @@ using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
-using System.Runtime.InteropServices;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -48,7 +47,8 @@ namespace UkrgoParser.Server.Services
                 {
                     Caption = link?.InnerText.Trim(),
                     ImageUri = new Uri(postElement.SelectSingleNode(".//img").Attributes["src"].Value),
-                    Uri = new Uri(link.Attributes["href"].Value)
+                    Uri = new Uri(link.Attributes["href"].Value),
+                    Price = postElement.SelectSingleNode(".//p[contains(@class, 'price')]")?.InnerText.Trim(),
                 };
 
                 postElementsList.Add(postLink);
@@ -84,13 +84,15 @@ namespace UkrgoParser.Server.Services
             var attributesElements = Doc.DocumentNode.SelectNodes("//ul[contains(@class, 'css-sfcl1s')]/li");
             var descriptionElem = Doc.DocumentNode.SelectSingleNode(".//div[@data-cy='ad_description']/div");
             var imageElements = Doc.DocumentNode.SelectNodes("//div[@data-cy='adPhotos-swiperSlide']//img");
+            var priceElem = Doc.DocumentNode.SelectSingleNode("//div[@data-testid='ad-price-container']/h3");
 
             return new Post
             {
                 Title = header.InnerText.Trim(),
                 Attributes = attributesElements.Select(elem => elem.InnerText),
                 Description = descriptionElem.InnerText.Trim(),
-                ImageUris = imageElements.Select(elem => new Uri(elem.Attributes["data-src"]?.Value ?? elem.Attributes["src"].Value)).ToList()
+                ImageUris = imageElements.Select(elem => new Uri(elem.Attributes["data-src"]?.Value ?? elem.Attributes["src"].Value)).ToList(),
+                Price = priceElem?.InnerText.Trim()
             };
         }
 

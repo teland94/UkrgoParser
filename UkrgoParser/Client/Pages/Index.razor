@@ -25,8 +25,14 @@
                 <MatCardMedia Wide="true" ImageUrl="@($"api/browser/GetImage?imageUri={postLink.PostLink.ImageUri}&cropUnwantedBackground=true")"></MatCardMedia>
                 <div class="up-mat-card-content">
                     <MatHeadline6 class="up-mat-card-clean-margin">
-                        <a href="@($"https://contact-info.azurewebsites.net/home/{postLink.Contact.PhoneNumber.Replace("+", "")}")" target="_blank">@postLink.Contact.PhoneNumber</a>
+                        <a href="https://contact-info.azurewebsites.net/home/@postLink.Contact.PhoneNumber.Replace("+", "")" target="_blank" onclick="event.stopPropagation();">@postLink.Contact.PhoneNumber</a>
                     </MatHeadline6>
+                    @if (!string.IsNullOrEmpty(postLink.PostLink.Price))
+                    {
+                        <MatSubtitle2>
+                            <strong>@postLink.PostLink.Price</strong>
+                        </MatSubtitle2>
+                    }
                     <MatSubtitle2 class="up-mat-card-clean-margin">
                         @postLink.Contact.Name
                     </MatSubtitle2>
@@ -72,14 +78,22 @@ else
             <td>
                 <div class="contact-panel">
                     <div class="contact">
-                        <a href="@($"https://contact-info.azurewebsites.net/home/{context.Contact.PhoneNumber.Replace("+", "")}")" class="contact-number" target="_blank">@context.Contact.PhoneNumber</a>
+                        <a href="https://contact-info.azurewebsites.net/home/@context.Contact.PhoneNumber.Replace("+", "")" class="contact-number" target="_blank">@context.Contact.PhoneNumber</a>
                         <span class="contact-name">@context.Contact.Name</span>
                     </div>
                     <MatIconButton Icon="@MatIconNames.Contact_phone" OnClick="@(async e => await EditContact(context.Contact.PhoneNumber, e))"></MatIconButton>
                 </div>
             </td>
             <td>
-                <a href="@context.PostLink.Uri.ToString()" target="_blank">@context.PostLink.Caption</a>
+                <p>
+                    <a href="@context.PostLink.Uri.ToString()" target="_blank">@context.PostLink.Caption</a>
+                </p>
+                @if (!string.IsNullOrEmpty(context.PostLink.Price))
+                {
+                    <p>
+                        <strong>@context.PostLink.Price</strong>
+                    </p>
+                }
             </td>
         </MatTableRow>
     </MatTable>

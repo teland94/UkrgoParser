@@ -10,6 +10,12 @@
     </div>
 </MatDialogTitle>
 <MatDialogContent>
+    @if (!string.IsNullOrEmpty(Post.Price))
+    {
+        <div class="mb-2">
+            <strong>@Post.Price</strong>
+        </div>
+    }
     <div class="row mb-2 attributes-panel">
         @foreach (var attr in Post.Attributes)
         {
@@ -19,18 +25,18 @@
     <div class="mb-2">
         @Post.Description
     </div>
-    @{
-        if (Post.ImageUris == null) return;
+    @if (Post.ImageUris != null)
+    {
         <BSCarousel NumberOfItems="@Post.ImageUris.Count" Interval="0" Class="carousel-fixed-height" Touch="true">
             <BSCarouselIndicators />
             <div class="carousel-inner">
                 @foreach (var imageUri in Post.ImageUris)
                 {
-                    <BSCarouselItem src="@($"api/browser/GetImage?imageUri={imageUri}&cropUnwantedBackground=true")" />
+                    <BSCarouselItem src="@($"api/browser/GetImage?imageUri={imageUri}&cropUnwantedBackground=true")"/>
                 }
             </div>
-            <BSCarouselControl CarouselDirection="CarouselDirection.Previous" />
-            <BSCarouselControl CarouselDirection="CarouselDirection.Next" />
+            <BSCarouselControl CarouselDirection="CarouselDirection.Previous"/>
+            <BSCarouselControl CarouselDirection="CarouselDirection.Next"/>
         </BSCarousel>
     }
 </MatDialogContent>

@@ -82,12 +82,7 @@ namespace UkrgoParser.Client.Pages
                     {
                         PostLinks.Add(new PostLinkViewModel
                         {
-                            PostLink = new PostLink
-                            {
-                                ImageUri = postLink.ImageUri,
-                                Uri = postLink.Uri,
-                                Caption = postLink.Caption
-                            },
+                            PostLink = postLink,
                             Contact = new Contact
                             {
                                 Name = contacts?.FirstOrDefault(c => c.PhoneNumber == phoneNumber)?.Name,

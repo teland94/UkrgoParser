@@ -9,5 +9,7 @@ namespace UkrgoParser.Shared.Models.Entities
         public string Caption { get; set; }
 
         public Uri Uri { get; set; }
+
+        public string Price { get; set; }
     }
 }
