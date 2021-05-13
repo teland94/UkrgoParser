@@ -92,3 +92,25 @@ a, .btn-link {
     max-width: 130px;
     max-height: 130px;
 }
+
+.attributes-panel {
+    margin-top: -16px !important;
+}
+
+.attributes-panel .attribute-item {
+    border: solid 1px #406367;
+    margin: 16px 8px 0 0;
+}
+
+.carousel-fixed-height {
+    height: 500px;
+    background-color: #808080;
+    display: flex;
+    align-items: center !important;
+}
+
+.carousel-fixed-height img {
+    max-height: 500px;
+    max-width: 300px;
+    margin: 0 auto;
+}

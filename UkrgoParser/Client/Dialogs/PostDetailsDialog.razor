@@ -10,20 +10,28 @@
     </div>
 </MatDialogTitle>
 <MatDialogContent>
-    <p>
-        @((MarkupString)Post.Attributes)
-    </p>
-    <p>
+    <div class="row mb-2 attributes-panel">
+        @foreach (var attr in Post.Attributes)
+        {
+            <div class="col-auto attribute-item">@attr</div>
+        }
+    </div>
+    <div class="mb-2">
         @Post.Description
-    </p>
+    </div>
     @{
         if (Post.ImageUris == null) return;
-        foreach (var imageUri in Post.ImageUris)
-        {
-            <p>
-                <img src="@($"api/browser/GetImage?imageUri={imageUri}&cropUnwantedBackground=true")" />
-            </p>
-        }
+        <BSCarousel NumberOfItems="@Post.ImageUris.Count" Interval="0" Class="carousel-fixed-height" Touch="true">
+            <BSCarouselIndicators />
+            <div class="carousel-inner">
+                @foreach (var imageUri in Post.ImageUris)
+                {
+                    <BSCarouselItem src="@($"api/browser/GetImage?imageUri={imageUri}&cropUnwantedBackground=true")" />
+                }
+            </div>
+            <BSCarouselControl CarouselDirection="CarouselDirection.Previous" />
+            <BSCarouselControl CarouselDirection="CarouselDirection.Next" />
+        </BSCarousel>
     }
 </MatDialogContent>
 <MatDialogActions>

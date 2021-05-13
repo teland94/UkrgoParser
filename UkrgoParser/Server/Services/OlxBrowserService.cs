@@ -20,7 +20,7 @@ namespace UkrgoParser.Server.Services
     {
         public static string AccessToken { get; set; }
 
-        private readonly Regex _phoneReplaceRegex = new(@"[\s\-]", RegexOptions.Compiled);
+        private readonly Regex _phoneReplaceRegex = new(@"[\s\-\(\)]", RegexOptions.Compiled);
 
         private OlxApiSettings OlxApiSettings { get; }
 
@@ -76,9 +76,22 @@ namespace UkrgoParser.Server.Services
             return phoneNumbers.FirstOrDefault();
         }
 
-        public Task<Post> GetPostDetails(Uri postLinkUri)
+        public async Task<Post> GetPostDetails(Uri postLinkUri)
         {
-            throw new NotImplementedException();
+            await LoadPageAsync(postLinkUri);
+
+            var header = Doc.DocumentNode.SelectSingleNode("//h1[@data-cy='ad_title']");
+            var attributesElements = Doc.DocumentNode.SelectNodes("//ul[contains(@class, 'css-sfcl1s')]/li");
+            var descriptionElem = Doc.DocumentNode.SelectSingleNode(".//div[@data-cy='ad_description']/div");
+            var imageElements = Doc.DocumentNode.SelectNodes("//div[@data-cy='adPhotos-swiperSlide']//img");
+
+            return new Post
+            {
+                Title = header.InnerText.Trim(),
+                Attributes = attributesElements.Select(elem => elem.InnerText),
+                Description = descriptionElem.InnerText.Trim(),
+                ImageUris = imageElements.Select(elem => new Uri(elem.Attributes["data-src"]?.Value ?? elem.Attributes["src"].Value)).ToList()
+            };
         }
 
         private async Task<IEnumerable<string>> GetPhoneNumbersAsync(string offerId)

@@ -84,7 +84,7 @@ namespace UkrgoParser.Server.Services
             return new Post
             {
                 Title = header.InnerText.Trim(),
-                Attributes = attributesDiv.InnerHtml.Trim(),
+                //Attributes = attributesDiv.InnerHtml.Trim(),
                 Description = descriptionDiv.ChildNodes[0].InnerText.Trim(),
                 ImageUris = imageUris
             };
