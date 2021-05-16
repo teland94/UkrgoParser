@@ -43,12 +43,16 @@ namespace UkrgoParser.Server.Services
                 var link = postElement
                     .SelectSingleNode(".//td[contains(@class, 'title-cell')]//a[contains(@class, 'detailsLink')]");
 
+                var bottomCell = postElement.SelectSingleNode(".//td[contains(@class, 'bottom-cell')]");
+
                 var postLink = new PostLink
                 {
                     Caption = link?.InnerText.Trim(),
                     ImageUri = new Uri(postElement.SelectSingleNode(".//img").Attributes["src"].Value),
                     Uri = new Uri(link.Attributes["href"].Value),
-                    Price = postElement.SelectSingleNode(".//p[contains(@class, 'price')]")?.InnerText.Trim(),
+                    Location = bottomCell.SelectSingleNode(".//small[1]").InnerText.Trim(),
+                    Date = bottomCell.SelectSingleNode(".//small[2]").InnerText.Trim(),
+                    Price = postElement.SelectSingleNode(".//p[contains(@class, 'price')]")?.InnerText.Trim()
                 };
 
                 postElementsList.Add(postLink);
@@ -82,8 +86,9 @@ namespace UkrgoParser.Server.Services
 
             var header = Doc.DocumentNode.SelectSingleNode("//h1[@data-cy='ad_title']");
             var attributesElements = Doc.DocumentNode.SelectNodes("//ul[contains(@class, 'css-sfcl1s')]/li");
-            var descriptionElem = Doc.DocumentNode.SelectSingleNode(".//div[@data-cy='ad_description']/div");
+            var descriptionElem = Doc.DocumentNode.SelectSingleNode("//div[@data-cy='ad_description']/div");
             var imageElements = Doc.DocumentNode.SelectNodes("//div[@data-cy='adPhotos-swiperSlide']//img");
+            var dateElem = Doc.DocumentNode.SelectSingleNode("//span[@data-cy='ad-posted-at']");
             var priceElem = Doc.DocumentNode.SelectSingleNode("//div[@data-testid='ad-price-container']/h3");
 
             return new Post
@@ -92,6 +97,7 @@ namespace UkrgoParser.Server.Services
                 Attributes = attributesElements.Select(elem => elem.InnerText),
                 Description = descriptionElem.InnerText.Trim(),
                 ImageUris = imageElements.Select(elem => new Uri(elem.Attributes["data-src"]?.Value ?? elem.Attributes["src"].Value)).ToList(),
+                Date = dateElem.InnerText.Trim(),
                 Price = priceElem?.InnerText.Trim()
             };
         }

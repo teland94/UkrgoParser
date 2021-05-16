@@ -13,6 +13,8 @@ namespace UkrgoParser.Shared.Models.Entities
 
         public ICollection<Uri> ImageUris { get; set; }
 
+        public string Date { get; set; }
+
         public string Price { get; set; }
     }
 }

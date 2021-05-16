@@ -10,6 +10,10 @@ namespace UkrgoParser.Shared.Models.Entities
 
         public Uri Uri { get; set; }
 
+        public string Location { get; set; }
+
+        public string Date { get; set; }
+
         public string Price { get; set; }
     }
 }

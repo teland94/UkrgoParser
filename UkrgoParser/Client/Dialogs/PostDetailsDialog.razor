@@ -25,6 +25,11 @@
     <div class="mb-2">
         @Post.Description
     </div>
+    <div class="mb-2">
+        <MatCaption>
+            @Post.Date
+        </MatCaption>
+    </div>
     @if (Post.ImageUris != null)
     {
         <BSCarousel NumberOfItems="@Post.ImageUris.Count" Interval="0" Class="carousel-fixed-height" Touch="true">
@@ -32,11 +37,11 @@
             <div class="carousel-inner">
                 @foreach (var imageUri in Post.ImageUris)
                 {
-                    <BSCarouselItem src="@($"api/browser/GetImage?imageUri={imageUri}&cropUnwantedBackground=true")"/>
+                    <BSCarouselItem src="@($"api/browser/GetImage?imageUri={imageUri}&cropUnwantedBackground=true")" />
                 }
             </div>
-            <BSCarouselControl CarouselDirection="CarouselDirection.Previous"/>
-            <BSCarouselControl CarouselDirection="CarouselDirection.Next"/>
+            <BSCarouselControl CarouselDirection="CarouselDirection.Previous" />
+            <BSCarouselControl CarouselDirection="CarouselDirection.Next" />
         </BSCarousel>
     }
 </MatDialogContent>
