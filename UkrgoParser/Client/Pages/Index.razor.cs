@@ -77,8 +77,8 @@ namespace UkrgoParser.Client.Pages
                         StateHasChanged();
                         continue;
                     }
-                    var existsInBlacklist = await BlacklistHttpClient.CheckPhoneNumberAsync(phoneNumber);
-                    if (existsInBlacklist && PostLinks.All(p => p.Contact.PhoneNumber != phoneNumber))
+                    var notExistsInBlacklist = await BlacklistHttpClient.CheckPhoneNumberAsync(phoneNumber);
+                    if (notExistsInBlacklist && PostLinks.All(p => p.Contact.PhoneNumber != phoneNumber))
                     {
                         PostLinks.Add(new PostLinkViewModel
                         {
@@ -108,7 +108,6 @@ namespace UkrgoParser.Client.Pages
                 }
             }
         }
-
 
         private async Task SaveData(MouseEventArgs e)
         {

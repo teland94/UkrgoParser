@@ -25,7 +25,9 @@
                 <MatCardMedia Wide="true" ImageUrl="@($"api/browser/GetImage?imageUri={postLink.PostLink.ImageUri}&cropUnwantedBackground=true")"></MatCardMedia>
                 <div class="up-mat-card-content">
                     <MatHeadline6 class="up-mat-card-clean-margin">
-                        <a href="https://contact-info.azurewebsites.net/home/@postLink.Contact.PhoneNumber.Replace("+", "")" target="_blank" onclick="event.stopPropagation();">@postLink.Contact.PhoneNumber</a>
+                        <a href="https://contact-info.azurewebsites.net/home/@postLink.Contact.PhoneNumber.Replace("+", "")" target="_blank" onclick="event.stopPropagation();">
+                            <span class="@(PostLinks.Count(p => p.Contact.PhoneNumber == postLink.Contact.PhoneNumber) > 1 ? "text-danger": "")">@postLink.Contact.PhoneNumber</span>
+                        </a>
                     </MatHeadline6>
                     @if (!string.IsNullOrEmpty(postLink.PostLink.Price))
                     {
@@ -87,7 +89,9 @@ else
             <td>
                 <div class="contact-panel">
                     <div class="contact">
-                        <a href="https://contact-info.azurewebsites.net/home/@context.Contact.PhoneNumber.Replace("+", "")" class="contact-number" target="_blank">@context.Contact.PhoneNumber</a>
+                        <a href="https://contact-info.azurewebsites.net/home/@context.Contact.PhoneNumber.Replace("+", "")" class="contact-number" target="_blank">
+                            <span class="@(PostLinks.Count(p => p.Contact.PhoneNumber == context.Contact.PhoneNumber) > 1 ? "text-danger": "")">@context.Contact.PhoneNumber</span>
+                        </a>
                         <span class="contact-name">@context.Contact.Name</span>
                     </div>
                     <MatIconButton Icon="@MatIconNames.Contact_phone" OnClick="@(async e => await EditContact(context.Contact.PhoneNumber, e))"></MatIconButton>

@@ -1,12 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
 using System.Net.Http;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using HtmlAgilityPack;
-using UkrgoParser.Server.Helpers;
+using Microsoft.Extensions.Caching.Memory;
 using UkrgoParser.Server.Interfaces;
 using UkrgoParser.Shared.Models.Entities;
 
@@ -14,9 +11,9 @@ namespace UkrgoParser.Server.Services
 {
     public class BrowserService : BrowserBaseService, IBrowserService
     {
-        public BrowserService(HttpClient client) : base(client)
+        public BrowserService(HttpClient client,
+            IMemoryCache memoryCache) : base(client, memoryCache)
         {
-            Console.WriteLine(client);
         }
 
         public async Task<IEnumerable<PostLink>> GetPostLinksAsync(Uri uri)
