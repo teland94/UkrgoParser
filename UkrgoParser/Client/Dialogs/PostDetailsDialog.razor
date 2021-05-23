@@ -32,17 +32,18 @@
     </div>
     @if (Post.ImageUris != null)
     {
-        <BSCarousel NumberOfItems="@Post.ImageUris.Count" Interval="0" Class="carousel-fixed-height" Touch="true">
-            <BSCarouselIndicators />
-            <div class="carousel-inner">
-                @foreach (var imageUri in Post.ImageUris)
-                {
-                    <BSCarouselItem src="@($"api/browser/GetImage?imageUri={imageUri}&cropUnwantedBackground=true")" />
-                }
+        <div class="splide">
+            <div class="splide__track">
+                <ul class="splide__list">
+                    @foreach (var imageUri in Post.ImageUris)
+                    {
+                        <li class="splide__slide">
+                            <img src="@($"api/browser/GetImage?imageUri={imageUri}&cropUnwantedBackground=true")" />
+                        </li>
+                    }
+                </ul>
             </div>
-            <BSCarouselControl CarouselDirection="CarouselDirection.Previous" />
-            <BSCarouselControl CarouselDirection="CarouselDirection.Next" />
-        </BSCarousel>
+        </div>
     }
 </MatDialogContent>
 <MatDialogActions>
@@ -57,9 +58,24 @@
     [CascadingParameter]
     public MatDialogReference DialogReference { get; set; }
 
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await Task.Yield();
+            await JsRuntime.InvokeVoidAsync("loadSplide");
+        }
+    }
+
+    [JSInvokable]
+    public void StateChanged()
+    {
+        StateHasChanged();
+    }
+
     private async Task CloseDialog()
     {
         DialogReference.Close(null);
-        await JsRuntime.InvokeAsync<object>("makeWindowScrollbarVisibleIfNeeded");
+        await JsRuntime.InvokeVoidAsync("makeWindowScrollbarVisibleIfNeeded");
     }
 }

@@ -9,7 +9,6 @@ using System.Text;
 using System.Threading.Tasks;
 using Blazored.LocalStorage;
 using BlazorPro.BlazorSize;
-using BlazorStrap;
 using CurrieTechnologies.Razor.Clipboard;
 using MatBlazor;
 using UkrgoParser.Client.HttpClients;
@@ -34,7 +33,6 @@ namespace UkrgoParser.Client
                 client.BaseAddress = new Uri($"{builder.HostEnvironment.BaseAddress}api/contact/"));
 
             services.AddMatBlazor();
-            services.AddBootstrapCss();
             services.AddMatToaster(config =>
             {
                 config.Position = MatToastPosition.BottomCenter;

@@ -68,7 +68,7 @@ namespace UkrgoParser.Server.Services
                 if (!MemoryCache.TryGetValue(uri, out result))
                 {
                     var source = await GetPageAsync(uri);
-                    result = MemoryCache.Set(uri, source, DateTimeOffset.Now.AddHours(1));
+                    result = MemoryCache.Set(uri, source, DateTimeOffset.Now.AddDays(1));
                 }
             }
             else
